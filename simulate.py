@@ -8,20 +8,21 @@ import time
 # import class for storing
 from utils.FlightDataHandler import FlightDataHandler
 
+### simulation parameters
+reference       = "step" # type of reference sequence
+t_init          = 0
+t_final         = 1
+t_resolution    = 0.001
+n_steps         = int((t_final-t_init)/t_resolution)
+noise           = 0      # if non-zero includes measurement noise with given gain
+useKalmanFilter = True   # if true the KF is used for feedback
+quantisation    = False  # if false removes quantisation from flow data
+
+
 if __name__ == "__main__":
 	start_test = time.perf_counter()
-
-	# simulation parameters
-	reference       = "step" # type of reference sequence
-	t_init          = 0
-	t_final         = 10
-	t_resolution    = 0.001
-	n_steps         = int((t_final-t_init)/t_resolution)
-	noise           = 0      # if non-zero includes measurement noise with given gain
-	useKalmanFilter = True   # if true the KF is used for feedback
-	quantisation    = False  # if false removes quantisation from flow data
 	
-	# initialization of  objects
+	# initialization of objects
 	physics = cfPhysics()
 	ctrl    = cfPIDController(physics.config, physics.b,\
 	                          physics.I, physics.m, physics.g,\

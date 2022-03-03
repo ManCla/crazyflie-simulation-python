@@ -18,7 +18,7 @@ class FlightDataHandler:
 
   def save(self):
     # saves itself to file named as current date and time
-    filename = time.strftime('%d%b%Y_%H%M%S', time.localtime())
+    filename = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     with open(data_directory+"/"+filename, "wb") as f:
       pk.dump(self, f, protocol=pk.HIGHEST_PROTOCOL)
 
