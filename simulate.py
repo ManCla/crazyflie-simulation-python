@@ -2,33 +2,34 @@ import numpy as np
 from cfSimulator.Physics import cfPhysics
 from cfSimulator.Controller import cfPIDController
 from cfSimulator.StateEstimator import cfEKF
+from testCases.referenceGen import Reference
 import time
 
 # import class for storing
-from utils.OutputDataHandler import OutputDataHandler
+from utils.FlightDataHandler import FlightDataHandler
 
 if __name__ == "__main__":
 	start_test = time.perf_counter()
 
+	# simulation parameters
+	reference       = "step" # type of reference sequence
+	t_init          = 0
+	t_final         = 10
+	t_resolution    = 0.001
+	n_steps         = int((t_final-t_init)/t_resolution)
+	noise           = 0      # if non-zero includes measurement noise with given gain
+	useKalmanFilter = True   # if true the KF is used for feedback
+	quantisation    = False  # if false removes quantisation from flow data
+	
 	# initialization of  objects
 	physics = cfPhysics()
-	reference = "step"
-	ctrl = cfPIDController(reference, physics.config, physics.b,\
-	                       physics.I, physics.m, physics.g,\
-	                       physics.k, physics.l)
-	est  = cfEKF(physics.g)
+	ctrl    = cfPIDController(physics.config, physics.b,\
+	                          physics.I, physics.m, physics.g,\
+	                          physics.k, physics.l)
+	est     = cfEKF(physics.g)
+	ref     = Reference(reference)
 
-	# simulation parameters
-	t_init  = 0
-	t_final = 10
-	t_resolution = 0.001
-	noise  = 0 # if non-zero includes measurement noise with given gain
-	useKalmanFilter = True  # if true the KF is used for feedback
-	quantisation    = False # if false removes quantisation from flow data
-	t_curr = t_init
-	n_steps = int((t_final-t_init)/t_resolution)
-
-	# storage variables
+	# initialize storage variables
 	t       = np.linspace(t_init,t_final,n_steps)
 	u_store = np.zeros((physics.n_inputs, n_steps))
 	x_store = np.zeros((physics.n_states, n_steps))
@@ -36,13 +37,19 @@ if __name__ == "__main__":
 	gyro    = np.zeros((3,n_steps)) # inertial measurement
 	pxCount = np.zeros((2,n_steps)) # pixel count measurement
 	zrange  = np.zeros((n_steps))   # z ranging measurement
-	set_pt  = np.zeros((3,n_steps)) # setpoint in cf
+	set_pt  = np.zeros((3,n_steps)) # setpoint fed to cf
 	err_fd  = np.zeros((3,n_steps)) # kalman innovation from flow measurements
 	x_est   = np.zeros((9,n_steps)) # state estimated by EKF [pos, vel, eta]
 
-	i = 0 # counter
+	# initialize loop variables
+	i       = 0      # iteration counter
+	t_curr  = t_init # current absolute time
 
-	# first iteration
+	###################
+	# simulation loop #
+	###################
+
+	# run first physics iteration
 	x_store[:,i] = physics.simulate(t_curr, u_store[:,i]) # simulate physics
 	i = i+1
 
@@ -51,7 +58,7 @@ if __name__ == "__main__":
 		t_curr = t[i]
 		if not i%500:
 			print("simulation at time " + str(t_curr))
-		set_pt[:,i] = ctrl.referenceGen(t_curr)               # get reference
+		set_pt[:,i] = ref.refGen(t_curr)           # get reference
 		if useKalmanFilter :
 			u_store[:,i] = ctrl.ctrlCompute(set_pt[:,i],\
 			                                x_est[0:3,i-1],\
@@ -85,7 +92,7 @@ if __name__ == "__main__":
 	# store data as object attributes of storage #
 	##############################################
 
-	storeObj = OutputDataHandler()
+	storeObj = FlightDataHandler()
 	storeObj.type    = "mitl"
 	storeObj.t       = t
 	storeObj.x       = x_store
@@ -113,4 +120,4 @@ if __name__ == "__main__":
 	storeObj.est_eta = x_est[6:9,:]
 
 	# save file
-	storeObj.save("outdata/")
+	storeObj.save()
