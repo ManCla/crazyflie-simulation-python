@@ -3,34 +3,84 @@
 import numpy as np
 
 # controller "macros"
-rateMain = 1000
-rateAttitude = 500
-ratePosition = 100
-posDT = 1/ratePosition
-attDT = 1/rateAttitude
+rate_main = 1000
+rate_attitude = 500
+rate_position = 100
+posDT = 1/rate_position
+attDT = 1/rate_attitude
+
+# cutoff frequencies for lp filters on derivative action
+pos_lpf_enable = True
+pos_filter_cutoff = 20
+vel_filter_cutoff = 20
+posZ_filter_cutoff = 20
+velZ_filter_cutoff = 20
+att_lpf_enable = False
+att_filter_cutoff  = 15
+attRate_filter_cutoff = 30
 
 def rateDo(rate, tick):
 	#utility function to trigger cascaded control loops at different rates
-	return not( tick % (rateMain/rate))
+	return not( tick % (rate_main/rate))
+
+'''
+	Second order low pass filter used to filter derivative action
+'''
+
+class lp2Filter():
+	def __init__(self, sample_freq, cutoff_freq):
+		fr   = sample_freq/cutoff_freq
+		ohm  = np.tan(np.pi/fr)
+		ohm2 = ohm**2
+		c    = 1+2*np.cos(np.pi/4)*ohm+ohm2
+		# coefficients
+		self.b0 = ohm2/c
+		self.b1 = 2*self.b0
+		self.b2 = self.b0
+		self.a1 = 2*(ohm2-1)/c
+		self.a2 = (1-2*np.cos(np.pi/4)*ohm+ohm2)/c
+		# init states
+		self.x1 = 0
+		self.x2 = 0
+
+	def filter(self, sample):
+		x0  = sample     - self.x1*self.a1 - self.x2*self.a2
+		out = x0*self.b0 + self.x1*self.b1 + self.x2*self.b2
+		self.x2 = self.x1
+		self.x1 = x0
+		return out
+
+'''
+	PID class
+'''
 
 class PID():
-	def __init__(self, kp, ki, kd, dt):
+	def __init__(self, kp, ki, kd, dt, lp_enable, lp_rate, lp_cutoff):
 		self.kp = kp
 		self.ki = ki
 		self.kd = kd
 		self.dt = dt 
 		self.oldError = 0
 		self.stateI = 0
+		self.lp_enable = lp_enable
+		if self.lp_enable :
+			self.lpf = lp2Filter(lp_rate, lp_cutoff)
 
 	def run(self, ref, measure):
 		# TODO?: in firmware they have low pass filter on D action
 		error = ref-measure
 		P = self.kp * error
 		D = self.kd*(error-self.oldError)/self.dt
+		if self.lp_enable :
+			D = self.lpf.filter(D)
 		self.stateI = self.stateI + error * self.dt
 		I = self.ki * self.stateI
 		self.oldError = error
 		return P+D+I
+
+'''
+	Actual controller class
+'''
 
 class cfPIDController():
 	
@@ -51,19 +101,19 @@ class cfPIDController():
 		self.etaDesired = np.array([0,0,0])
 
 		# PID controllers - position
-		self.xPID  = PID(2.0, 0  ,0,posDT) 
-		self.yPID  = PID(2.0, 0  ,0,posDT)
-		self.zPID  = PID(2.0, 0.5,0,posDT)
-		self.vxPID = PID(25.0,1.0,0,posDT)
-		self.vyPID = PID(25.0,1.0,0,posDT)
-		self.vzPID = PID(25.0,15 ,0,posDT)
+		self.xPID  = PID(2.0,0,0,posDT,pos_lpf_enable,rate_position,pos_filter_cutoff) 
+		self.yPID  = PID(2.0,0,0,posDT,pos_lpf_enable,rate_position,pos_filter_cutoff)
+		self.zPID  = PID(2.0,0.5,0,posDT,pos_lpf_enable,rate_position,posZ_filter_cutoff)
+		self.vxPID = PID(25.0,1.0,0,posDT,pos_lpf_enable,rate_position,vel_filter_cutoff)
+		self.vyPID = PID(25.0,1.0,0,posDT,pos_lpf_enable,rate_position,vel_filter_cutoff)
+		self.vzPID = PID(25.0,15 ,0,posDT,pos_lpf_enable,rate_position,velZ_filter_cutoff)
 		# PID controllers - attitude
-		self.phiPID    = PID(6,3,0,attDT)
-		self.thetaPID  = PID(6,3,0,attDT)
-		self.psiPID    = PID(6,1,0.35,attDT)
-		self.phidPID   = PID(250,500,2.5,attDT)
-		self.thetadPID = PID(250,500,2.5,attDT)
-		self.psidPID   = PID(120,16.7,0,attDT)
+		self.phiPID    = PID(6,3,0,attDT,att_lpf_enable,rate_attitude,att_filter_cutoff)
+		self.thetaPID  = PID(6,3,0,attDT,att_lpf_enable,rate_attitude,att_filter_cutoff)
+		self.psiPID    = PID(6,1,0.35,attDT,att_lpf_enable,rate_attitude,att_filter_cutoff)
+		self.phidPID   = PID(250,500,2.5,attDT,att_lpf_enable,rate_attitude,attRate_filter_cutoff)
+		self.thetadPID = PID(250,500,2.5,attDT,att_lpf_enable,rate_attitude,attRate_filter_cutoff)
+		self.psidPID   = PID(120,16.7,0,attDT,att_lpf_enable,rate_attitude,attRate_filter_cutoff)
 		
 	#############################
 	### TORQUE -> PWM MAPPING ###
@@ -122,10 +172,10 @@ class cfPIDController():
 		eta_fw    =  (eta*180.0/np.pi)*np.array([1,-1,-1])
 		etadot_fw = (gyro*180.0/np.pi)*np.array([1,-1,-1])
 		# position control
-		if rateDo(ratePosition, self.tick):
+		if rateDo(rate_position, self.tick):
 			self.T, self.etaDesired = self.positionCtrl(pos_r, pos, vel, eta_fw)
 		# attitude control
-		if rateDo(rateAttitude, self.tick):
+		if rateDo(rate_attitude, self.tick):
 			self.tau = self.attitudeCtrl(self.etaDesired, eta_fw, etadot_fw)
 		self.tick = self.tick + 1
 		# output PWM values
