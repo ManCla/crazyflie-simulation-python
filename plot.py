@@ -1,7 +1,7 @@
 import sys
 import os
 from datetime import datetime
-from utils.FlightDataHandler import FlightDataHandler
+from utils.FlightDataHandler import FlightDataHandler as fdh
 
 if __name__ == "__main__":
 
@@ -16,11 +16,11 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         file_location = sys.argv[2]
     else :
-        file_list = list(map(lambda x:datetime.strptime(x,'%Y%m%d_%H%M%S') , os.listdir("flightdata")))
+        file_list = list(map(lambda x:datetime.strptime(x,fdh.date_format) , os.listdir("flightdata")))
         file_list.sort()
-        file_location = "flightdata/"+file_list[-1].strftime('%Y%m%d_%H%M%S')
+        file_location = fdh.data_directory+"/"+file_list[-1].strftime(fdh.date_format)
     experiment_name = file_location.split('/')[-1]
-    data_storage = FlightDataHandler()
+    data_storage = fdh()
     data_storage.open(file_location, experiment_name)
     print('* read data with total length: \033[33m' + str(data_storage.trace_length) + '\033[0m')
 

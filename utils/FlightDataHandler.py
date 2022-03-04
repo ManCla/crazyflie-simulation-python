@@ -9,17 +9,17 @@ import numpy as np
 # set to False to generate paper figures
 remove_intermediate = True
 
-data_directory = "flightdata"
-
 class FlightDataHandler:
+  data_directory = "flightdata"
+  date_format    = '%Y%m%d_%H%M%S'
 
   def __init__(self):
     pass
 
   def save(self):
     # saves itself to file named as current date and time
-    filename = time.strftime('%Y%m%d_%H%M%S', time.localtime())
-    with open(data_directory+"/"+filename, "wb") as f:
+    filename = time.strftime(self.date_format, time.localtime())
+    with open(self.data_directory+"/"+filename, "wb") as f:
       pk.dump(self, f, protocol=pk.HIGHEST_PROTOCOL)
 
   def open(self, data_location, experiment_name):
