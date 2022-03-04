@@ -10,14 +10,20 @@ posDT = 1/rate_position
 attDT = 1/rate_attitude
 
 # cutoff frequencies for lp filters on derivative action
-pos_lpf_enable = True
-pos_filter_cutoff = 20
-vel_filter_cutoff = 20
+pos_lpf_enable     = True
+pos_filter_cutoff  = 20
+vel_filter_cutoff  = 20
 posZ_filter_cutoff = 20
 velZ_filter_cutoff = 20
-att_lpf_enable = False
-att_filter_cutoff  = 15
+att_lpf_enable        = False
+att_filter_cutoff     = 15
 attRate_filter_cutoff = 30
+
+# saturations
+thrust_min = 20000
+thrust_max = 65535
+roll_limit  = 20   # degrees
+pitch_limit = 20   # degrees
 
 def rateDo(rate, tick):
 	#utility function to trigger cascaded control loops at different rates
@@ -75,6 +81,7 @@ class PID():
 			D = self.lpf.filter(D)
 		self.stateI = self.stateI + error * self.dt
 		I = self.ki * self.stateI
+		# TO DO: implement integral action capping
 		self.oldError = error
 		return P+D+I
 
@@ -127,7 +134,8 @@ class cfPIDController():
 		pwm2 = T - r - p - y
 		pwm3 = T + r - p + y
 		pwm4 = T + r + p - y
-		return np.array([pwm1, pwm2, pwm3, pwm4])
+		# saturate to actuator limits
+		return np.clip(np.array([pwm1, pwm2, pwm3, pwm4]),0,65535)
 
 	############################
 	### CONTROLLER FUNCTIONS ###
@@ -144,10 +152,12 @@ class cfPIDController():
 		rollRaw  = self.vyPID.run(v_ref[1], vel[1])
 		roll  = - rollRaw  * np.cos(eta[2]*np.pi/180.0) - pitchRaw * np.sin(eta[2]*np.pi/180.0)
 		pitch = - pitchRaw * np.cos(eta[2]*np.pi/180.0) + rollRaw  * np.sin(eta[2]*np.pi/180.0)
+		roll  = np.clip(roll ,-roll_limit,roll_limit)
+		pitch = np.clip(pitch,-pitch_limit,pitch_limit)
 		thrust = self.vzPID.run(v_ref[2], vel[2])
 		thrustScale = 1000
 		thrustBase   = 36000
-		thrust = thrust * thrustScale + thrustBase
+		thrust = np.clip(thrust*thrustScale+thrustBase, thrust_min, thrust_max)
 		return thrust, np.array([roll, pitch, 0])
 
 	def attitudeCtrl(self, etaDesired, eta, etadot):
