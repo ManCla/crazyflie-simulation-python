@@ -11,7 +11,7 @@ from utils.FlightDataHandler import FlightDataHandler
 ### simulation parameters
 reference       = "step" # type of reference sequence
 t_init          = 0
-t_final         = 1
+t_final         = 10
 t_resolution    = 0.001
 n_steps         = int((t_final-t_init)/t_resolution)
 noise           = 0      # if non-zero includes measurement noise with given gain
