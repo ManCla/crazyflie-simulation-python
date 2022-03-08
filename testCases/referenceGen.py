@@ -1,8 +1,8 @@
 import numpy as np
 
-hovering_height = 1.5
-size = 1.0
-omega = 5.5
+hovering_height = 0.5
+size = 0.2
+omega = 1.0
 
 class Reference():
     
