@@ -13,7 +13,7 @@ class zTestCase():
         if   (self.trajectoryType == "step") :
             z = self.base
         elif (self.trajectoryType == "sinus") :
-            z = self.amplitude*np.sin(omega*t)+self.base
+            z = self.amplitude*np.sin(self.omega*t)+self.base
         elif (self.trajectoryType == "ramp") :
             z = self.amplitude*t+self.base
         return np.array([0,0,z])

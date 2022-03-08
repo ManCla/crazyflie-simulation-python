@@ -7,7 +7,8 @@ from testCases.zControlTests import zTestCase
 duration  = 5     # duration of flight
 
 test_cases = [zTestCase("step",1,0,0),
-			  zTestCase("step",20,0,0),]
+			  zTestCase("step",20,0,0),
+			  zTestCase("sinus",10,5,3),]
 
 if __name__ == "__main__":
 
