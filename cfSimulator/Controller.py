@@ -8,7 +8,7 @@ rate_position = 100
 posDT = 1/rate_position
 attDT = 1/rate_attitude
 
-# cutoff frequencies for lp filters on derivative action
+# low pass filters on derivative action
 pos_lpf_enable     = True
 pos_filter_cutoff  = 20
 vel_filter_cutoff  = 20
@@ -31,7 +31,6 @@ def rateDo(rate, tick):
 '''
 	Second order low pass filter used to filter derivative action
 '''
-
 class lp2Filter():
 	def __init__(self, sample_freq, cutoff_freq):
 		fr   = sample_freq/cutoff_freq
@@ -58,7 +57,6 @@ class lp2Filter():
 '''
 	PID class
 '''
-
 class PID():
 	def __init__(self, kp, ki, kd, dt, lp_enable, lp_rate, lp_cutoff, Iclamp):
 		self.kp = kp
@@ -88,7 +86,6 @@ class PID():
 '''
 	Actual controller class
 '''
-
 class cfPIDController():
 	
 	def __init__(self, config, b, I, m, g, k, l):
