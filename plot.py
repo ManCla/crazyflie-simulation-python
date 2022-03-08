@@ -1,7 +1,7 @@
 import sys
 import os
 from datetime import datetime
-from utils.FlightDataHandler import FlightDataHandler as fdh
+from cfSimulator.utils.FlightDataHandler import FlightDataHandler as fdh
 
 if __name__ == "__main__":
 

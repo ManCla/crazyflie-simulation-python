@@ -1,12 +1,20 @@
 # class implementing the PID controller of the Crazyflie
 import numpy as np
+from .utils import PID
 
-# controller "macros"
+'''
+	controller "macros"
+'''
+# execution of different control loops
 rate_main = 1000
 rate_attitude = 500
 rate_position = 100
 posDT = 1/rate_position
 attDT = 1/rate_attitude
+
+def rateDo(rate, tick):
+	#utility function to trigger cascaded control loops at different rates
+	return not( tick % (rate_main/rate))
 
 # low pass filters on derivative action
 pos_lpf_enable     = True
@@ -23,65 +31,6 @@ thrust_min = 20000
 thrust_max = 65535
 roll_limit  = 20   # degrees
 pitch_limit = 20   # degrees
-
-def rateDo(rate, tick):
-	#utility function to trigger cascaded control loops at different rates
-	return not( tick % (rate_main/rate))
-
-'''
-	Second order low pass filter used to filter derivative action
-'''
-class lp2Filter():
-	def __init__(self, sample_freq, cutoff_freq):
-		fr   = sample_freq/cutoff_freq
-		ohm  = np.tan(np.pi/fr)
-		ohm2 = ohm**2
-		c    = 1+2*np.cos(np.pi/4)*ohm+ohm2
-		# coefficients
-		self.b0 = ohm2/c
-		self.b1 = 2*self.b0
-		self.b2 = self.b0
-		self.a1 = 2*(ohm2-1)/c
-		self.a2 = (1-2*np.cos(np.pi/4)*ohm+ohm2)/c
-		# init states
-		self.x1 = 0
-		self.x2 = 0
-
-	def filter(self, sample):
-		x0  = sample     - self.x1*self.a1 - self.x2*self.a2
-		out = x0*self.b0 + self.x1*self.b1 + self.x2*self.b2
-		self.x2 = self.x1
-		self.x1 = x0
-		return out
-
-'''
-	PID class
-'''
-class PID():
-	def __init__(self, kp, ki, kd, dt, lp_enable, lp_rate, lp_cutoff, Iclamp):
-		self.kp = kp
-		self.ki = ki
-		self.kd = kd
-		self.dt = dt 
-		self.oldError = 0
-		self.stateI = 0
-		self.Iclamp  = Iclamp
-		self.lp_enable = lp_enable
-		if self.lp_enable :
-			self.lpf = lp2Filter(lp_rate, lp_cutoff)
-
-	def run(self, ref, measure):
-		error = ref-measure
-		P = self.kp * error
-		D = self.kd*(error-self.oldError)/self.dt
-		if self.lp_enable :
-			D = self.lpf.filter(D)
-		self.stateI = self.stateI + error * self.dt
-		if not(self.Iclamp==0):
-			self.stateI = np.clip(self.stateI, -self.Iclamp, self.Iclamp)
-		I = self.ki * self.stateI
-		self.oldError = error
-		return P+D+I
 
 '''
 	Actual controller class

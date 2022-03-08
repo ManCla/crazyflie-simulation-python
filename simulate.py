@@ -1,12 +1,10 @@
 import numpy as np
-from cfSimulator.Physics import cfPhysics
-from cfSimulator.Controller import cfPIDController
-from cfSimulator.StateEstimator import cfEKF
+from cfSimulator import cfPhysics
+from cfSimulator import cfPIDController
+from cfSimulator import cfEKF
+from cfSimulator import FlightDataHandler
 from testCases.referenceGen import Reference
 import time
-
-# import class for storing
-from utils.FlightDataHandler import FlightDataHandler
 
 ### simulation parameters
 reference       = "step" # type of reference sequence
