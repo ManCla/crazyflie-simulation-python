@@ -1,5 +1,4 @@
-# class implementing the a controller for the crazyflie
-# mainly needed for testing of the python model
+# class implementing the PID controller of the Crazyflie
 import numpy as np
 
 # controller "macros"
@@ -61,27 +60,28 @@ class lp2Filter():
 '''
 
 class PID():
-	def __init__(self, kp, ki, kd, dt, lp_enable, lp_rate, lp_cutoff):
+	def __init__(self, kp, ki, kd, dt, lp_enable, lp_rate, lp_cutoff, Iclamp):
 		self.kp = kp
 		self.ki = ki
 		self.kd = kd
 		self.dt = dt 
 		self.oldError = 0
 		self.stateI = 0
+		self.Iclamp  = Iclamp
 		self.lp_enable = lp_enable
 		if self.lp_enable :
 			self.lpf = lp2Filter(lp_rate, lp_cutoff)
 
 	def run(self, ref, measure):
-		# TODO?: in firmware they have low pass filter on D action
 		error = ref-measure
 		P = self.kp * error
 		D = self.kd*(error-self.oldError)/self.dt
 		if self.lp_enable :
 			D = self.lpf.filter(D)
 		self.stateI = self.stateI + error * self.dt
+		if not(self.Iclamp==0):
+			self.stateI = np.clip(self.stateI, -self.Iclamp, self.Iclamp)
 		I = self.ki * self.stateI
-		# TO DO: implement integral action capping
 		self.oldError = error
 		return P+D+I
 
@@ -108,19 +108,19 @@ class cfPIDController():
 		self.etaDesired = np.array([0,0,0])
 
 		# PID controllers - position
-		self.xPID  = PID(2.0,0,0,posDT,pos_lpf_enable,rate_position,pos_filter_cutoff) 
-		self.yPID  = PID(2.0,0,0,posDT,pos_lpf_enable,rate_position,pos_filter_cutoff)
-		self.zPID  = PID(2.0,0.5,0,posDT,pos_lpf_enable,rate_position,posZ_filter_cutoff)
-		self.vxPID = PID(25.0,1.0,0,posDT,pos_lpf_enable,rate_position,vel_filter_cutoff)
-		self.vyPID = PID(25.0,1.0,0,posDT,pos_lpf_enable,rate_position,vel_filter_cutoff)
-		self.vzPID = PID(25.0,15 ,0,posDT,pos_lpf_enable,rate_position,velZ_filter_cutoff)
+		self.xPID  = PID(2.0,0,0,posDT,pos_lpf_enable,rate_position,pos_filter_cutoff,5000)
+		self.yPID  = PID(2.0,0,0,posDT,pos_lpf_enable,rate_position,pos_filter_cutoff,5000)
+		self.zPID  = PID(2.0,0.5,0,posDT,pos_lpf_enable,rate_position,posZ_filter_cutoff,5000)
+		self.vxPID = PID(25.0,1.0,0,posDT,pos_lpf_enable,rate_position,vel_filter_cutoff,5000)
+		self.vyPID = PID(25.0,1.0,0,posDT,pos_lpf_enable,rate_position,vel_filter_cutoff,5000)
+		self.vzPID = PID(25.0,15 ,0,posDT,pos_lpf_enable,rate_position,velZ_filter_cutoff,5000)
 		# PID controllers - attitude
-		self.phiPID    = PID(6,3,0,attDT,att_lpf_enable,rate_attitude,att_filter_cutoff)
-		self.thetaPID  = PID(6,3,0,attDT,att_lpf_enable,rate_attitude,att_filter_cutoff)
-		self.psiPID    = PID(6,1,0.35,attDT,att_lpf_enable,rate_attitude,att_filter_cutoff)
-		self.phidPID   = PID(250,500,2.5,attDT,att_lpf_enable,rate_attitude,attRate_filter_cutoff)
-		self.thetadPID = PID(250,500,2.5,attDT,att_lpf_enable,rate_attitude,attRate_filter_cutoff)
-		self.psidPID   = PID(120,16.7,0,attDT,att_lpf_enable,rate_attitude,attRate_filter_cutoff)
+		self.phiPID    = PID(6,3,0,attDT,att_lpf_enable,rate_attitude,att_filter_cutoff,20)
+		self.thetaPID  = PID(6,3,0,attDT,att_lpf_enable,rate_attitude,att_filter_cutoff,20)
+		self.psiPID    = PID(6,1,0.35,attDT,att_lpf_enable,rate_attitude,att_filter_cutoff,360)
+		self.phidPID   = PID(250,500,2.5,attDT,att_lpf_enable,rate_attitude,attRate_filter_cutoff,33.3)
+		self.thetadPID = PID(250,500,2.5,attDT,att_lpf_enable,rate_attitude,attRate_filter_cutoff,33.3)
+		self.psidPID   = PID(120,16.7,0,attDT,att_lpf_enable,rate_attitude,attRate_filter_cutoff,166.7)
 		
 	#############################
 	### TORQUE -> PWM MAPPING ###
