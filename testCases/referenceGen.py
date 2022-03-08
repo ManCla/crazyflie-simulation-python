@@ -1,6 +1,8 @@
 import numpy as np
 
-hovering_height = 0.5
+hovering_height = 1.5
+size = 1.0
+omega = 5.5
 
 class Reference():
     
@@ -9,15 +11,18 @@ class Reference():
         self.trajectoryType = refType
 
     def refGen(self, t):
+        # start by hovering 
         if t<2 : 
             return np.array([0,0,hovering_height])
+        # actual flight sequence
         if   (self.trajectoryType == "step") :
-            step_size = 0.5
             if t<6:
-                return np.array([step_size,0,hovering_height])
-            return np.array([0,step_size,hovering_height])
+                return np.array([size,0,hovering_height])
+            return np.array([0,size,hovering_height])
         elif (self.trajectoryType == "zsinus") :
-            return np.array([0,0,np.sin(0.2*t)+hovering_height])
+            return np.array([0,0,size*np.sin(omega*t)+hovering_height])
+        elif (self.trajectoryType == "zramp") :
+            return np.array([0,0,size*t+hovering_height])
         # NOTE: following wont work when using kalman filter since 
         #       position estimate is open loop
         elif (self.trajectoryType == "xsinus") :
