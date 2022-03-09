@@ -12,29 +12,38 @@ test_cases = [# STEPS -- OMEGA = 0
 			  zTestCase("step",2,0,0),      # -- small innocuous saturation
 			  zTestCase("step",3,0,0),      # saturating -- recovering well
 			  zTestCase("step",5,0,0),      # saturating -- overshoot
-			  zTestCase("step",10,0,0),     # saturating -- almost recover
-			  zTestCase("step",20,0,0),     # saturating -- crash
+			  zTestCase("step",7,0,0),      # saturating -- eventually recover
+			  zTestCase("step",10,0,0),     # saturating -- eventually recover
+			  zTestCase("step",20,0,0),     # saturating -- crash?
 			  # OMEGA = 0.25
-			  zTestCase("sinus",2,1,.25),   # -- good tracking
+			  zTestCase("sinus",1,.5 ,.25),  # -- good tracking
+			  zTestCase("sinus",2,1  ,.25),  # -- good tracking
+			  zTestCase("sinus",3,2  ,.25),  # -- good tracking
+			  zTestCase("sinus",3,2.5,.25),  # -- good tracking
+			  zTestCase("sinus",4,3  ,.25),  # -- good tracking
+			  zTestCase("sinus",5,4  ,.25),  # saturating at step -- good tracking
+			  zTestCase("sinus",6,5  ,.25),  # saturating at step -- good tracking
 			  # OMEGA = 0.5
 			  zTestCase("sinus",1,.5 ,.5),  # -- good tracking
 			  zTestCase("sinus",2,1  ,.5),  # -- good tracking
 			  zTestCase("sinus",3,2  ,.5),  # -- good tracking
 			  zTestCase("sinus",3,2.5,.5),  # -- good tracking
 			  zTestCase("sinus",4,3  ,.5),  # -- good tracking
-			  zTestCase("sinus",5,4  ,.5),  # saturating because of initial step
-			  zTestCase("sinus",6,5  ,.5),  # saturating because of initial step
+			  zTestCase("sinus",5,4  ,.5),  # saturating at step -- good tracking
+			  zTestCase("sinus",6,5  ,.5),  # saturating at step -- good tracking
 			  # OMEGA = 1
 			  zTestCase("sinus",2,1  ,1),   # -- phase shift
 			  zTestCase("sinus",2,1.5,1),   # -- phase shift
 			  zTestCase("sinus",3,2  ,1),   # -- phase shift
 			  zTestCase("sinus",3,2.5,1),   # -- phase shift
 			  zTestCase("sinus",4,3.5,1),   # -- phase shift
-			  zTestCase("sinus",5,4  ,1),   # saturating because of initial step
+			  zTestCase("sinus",5,4  ,1),   # saturating at step
 			  # OMEGA = 2
 			  zTestCase("sinus",2,1  ,2),   # -- phase shift
 			  zTestCase("sinus",2,1.5,2),   # -- phase shift
 			  zTestCase("sinus",3,2  ,2),   # saturating -- phase shift
+			  zTestCase("sinus",4,3  ,2),   # saturating -- very funky patterns
+			  zTestCase("sinus",5,4  ,2),   # saturating -- very funky patterns
 			  # OMEGA = 3
 			  zTestCase("sinus",2,1  ,3),   # saturating -- phase shift
 			  zTestCase("sinus",2,1.5,3),   # saturating -- funny filtering
