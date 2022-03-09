@@ -7,11 +7,11 @@ from testCases.zControlTests import zTestCase
 
 duration  = 15     # duration of flight
 
-test_cases = [# STEPS
+test_cases = [# STEPS -- OMEGA = 0
 			  zTestCase("step",1,0,0),      # -- good tracking
 			  zTestCase("step",2,0,0),      # -- small innocuous saturation
 			  zTestCase("step",3,0,0),      # saturating -- recovering well
-			  zTestCase("step",5,0,0),      # saturating -- recovering well
+			  zTestCase("step",5,0,0),      # saturating -- overshoot
 			  zTestCase("step",10,0,0),     # saturating -- almost recover
 			  zTestCase("step",20,0,0),     # saturating -- crash
 			  # OMEGA = 0.25
