@@ -54,7 +54,7 @@ class cfSimulation():
 
 		while i<n_steps: # loop over time steps
 			if not i%500: # progress printout
-				print("simulation at time " + str(t[i]))
+				print(" -- simulation at time " + str(t[i]))
 
 			set_pt[:,i] = ref.refGen(t[i]) # get reference
 			if useKalmanFilter :           # compute control action from estimated state
