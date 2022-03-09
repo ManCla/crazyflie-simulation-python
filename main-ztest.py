@@ -16,13 +16,13 @@ test_cases = [# STEPS -- OMEGA = 0
 			  zTestCase("step",10,0,0),     # saturating -- eventually recover
 			  zTestCase("step",20,0,0),     # saturating -- crash?
 			  # OMEGA = 0.25
-			  zTestCase("sinus",1,.5 ,.25),  # -- good tracking
-			  zTestCase("sinus",2,1  ,.25),  # -- good tracking
-			  zTestCase("sinus",3,2  ,.25),  # -- good tracking
-			  zTestCase("sinus",3,2.5,.25),  # -- good tracking
-			  zTestCase("sinus",4,3  ,.25),  # -- good tracking
-			  zTestCase("sinus",5,4  ,.25),  # saturating at step -- good tracking
-			  zTestCase("sinus",6,5  ,.25),  # saturating at step -- good tracking
+			  zTestCase("sinus",1,.5 ,.25), # -- good tracking
+			  zTestCase("sinus",2,1  ,.25), # -- good tracking
+			  zTestCase("sinus",3,2  ,.25), # -- good tracking
+			  zTestCase("sinus",3,2.5,.25), # -- good tracking
+			  zTestCase("sinus",4,3  ,.25), # -- good tracking
+			  zTestCase("sinus",5,4  ,.25), # saturating at step -- good tracking
+			  zTestCase("sinus",6,5  ,.25), # saturating at step -- good tracking
 			  # OMEGA = 0.5
 			  zTestCase("sinus",1,.5 ,.5),  # -- good tracking
 			  zTestCase("sinus",2,1  ,.5),  # -- good tracking
