@@ -472,6 +472,7 @@ class FlightDataHandler:
             error = error + np.abs(self.setpoint_position_z[i] - self.position_z[i])
         return error
 
-    def saturated(self):
+    def motors_saturated(self):
         # return the number of time steps in which the controller was saturated
+        # TO DO: implement me
         pass
