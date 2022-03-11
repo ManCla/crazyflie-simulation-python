@@ -26,16 +26,17 @@ class FlightDataHandler:
         with open(self.data_directory+"/"+filename, "wb") as f:
             pk.dump(self, f, protocol=pk.HIGHEST_PROTOCOL)
 
-    def open(self, data_location, experiment_name):
+    def open(self, data_location, experiment_name, silent=False):
         self.data_location = data_location
         self.experiment_name = str(experiment_name)
 
         with open(self.data_location, 'rb') as f:
             self.data = pk.load(f)
-        print('Reading data from file: \033[4m' + self.data_location + '\033[0m')
         self.type = self.data.type
-        print('Type of test is: ' + self.type)
         self.unwrap()
+        if not(silent):
+            print('Reading data from file: \033[4m' + self.data_location + '\033[0m')
+            print('Type of test is: ' + self.type)
 
     def unwrap(self):
         # splitting data into specific values
@@ -404,7 +405,6 @@ class FlightDataHandler:
             axs[2, 1].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
         print('* figure 3:\033[33m sensor data and Kalman errors\033[0m')
 
-
     def controlActionPlot(self):
         # now plot all the others
         chosen_size = (20, 7)
@@ -466,5 +466,12 @@ class FlightDataHandler:
             except OSError:
                 pass
 
+    def compute_z_performance(self):
+        error = 0
+        for i in range(self.trace_length):
+            error = error + np.abs(self.setpoint_position_z[i] - self.position_z[i])
+        return error
 
-
+    def saturated(self):
+        # return the number of time steps in which the controller was saturated
+        pass
