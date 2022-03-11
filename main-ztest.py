@@ -2,10 +2,11 @@ import time
 from os.path import exists
 
 from cfSimulator import cfSimulation
+from cfSimulator import FlightDataHandler
 # from testCases.referenceGen import Reference
 from testCases.zControlTests import zTestCase
 
-duration  = 15     # duration of flight
+duration  = 20     # duration of flight
 
 test_cases = [# STEPS -- OMEGA = 0
 			  zTestCase("step",1,0,0),      # -- good tracking
@@ -61,10 +62,11 @@ if __name__ == "__main__":
 
 	# ref = Reference(reference)
 	for ref in test_cases:
-		file_name='z-test/'+ref.trajectoryType+'-'+\
+		file_name=ref.trajectoryType+'-'+\
 		          str(ref.base)+'-'+str(ref.amplitude)+'-'+str(ref.omega)
-		if not(exists('flightdata/'+file_name)):
-			print(" * Executing Test {}".format(file_name.split('/')[-1]))
+		file_path='flightdata/'+'z-test/'+file_name
+		if not(exists(file_path)):
+			print(" * Executing Test {}".format(file_name))
 			sim = cfSimulation() # initialize simulation objects
 			start_test = time.perf_counter()
 			storeObj = sim.run(ref, duration) # actual test execution
@@ -72,6 +74,10 @@ if __name__ == "__main__":
 			print(" -- This test took " + str(end_test-start_test) + " seconds")
 
 			# store simulation results
-			storeObj.save(file_name)
+			storeObj.save('z-test/'+file_name)
 		else :
-			print(" * Test {} already executed".format(file_name.split('/')[-1]))
+			print(" * Test {} already executed".format(file_name.split('/')[-1]),end =".  ")
+			storeObj = FlightDataHandler()
+			storeObj.open(file_path, file_name.split('/')[-1],True)
+			# show flight performance
+			print("   Flight performance: {}".format(storeObj.compute_z_performance()))
