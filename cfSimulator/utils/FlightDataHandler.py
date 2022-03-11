@@ -467,20 +467,35 @@ class FlightDataHandler:
             except OSError:
                 pass
 
-    def compute_z_error(self):
-        error = 0
+    def analyse_z(self):
+        err = 0          # error
+        mot_sat_tot = 0  # total time motors are saturated
+
+        thrust_min = 20000 # TO DO: not so nice that those are hard coded
+        thrust_max = 65535 # possibly they should be defined in __init__()?
+
         if (self.test=="step"):
             # if test was a step skip the last 5 seconds
-            for i in range(self.trace_length-5000):
-                error = error + np.abs(self.setpoint_position_z[i] - self.position_z[i])
+            time_range = range(self.trace_length-5000)
         if (self.test=="sinus"):
             # if test was a sinus remove the warm up in the first 5 seconds
-            for i in range(5000,self.trace_length):
-                error = error + np.abs(self.setpoint_position_z[i] - self.position_z[i])
-        return error
+            time_range = range(5000,self.trace_length)
+        
+        for i in time_range:
+            err = err + np.abs(self.setpoint_position_z[i] - self.position_z[i])
+            mot_sat_tot = mot_sat_tot + \
+                          (self.control_motor_1[i]<thrust_min+1 or\
+                           self.control_motor_1[i]<thrust_max-1)
+        self.error_cumulative      = err
+        self.motors_saturated_time = mot_sat_tot
 
+    def compute_z_error(self):
+        if not(hasattr(self, "error_cumulative")):
+            self.analyse_z()
+        return self.error_cumulative
 
     def motors_saturated(self):
         # return the number of time steps in which the controller was saturated
-        # TO DO: implement me
-        pass
+        if not(hasattr(self, "motors_saturated_time")):
+            self.analyse_z()
+        return self.motors_saturated_time
