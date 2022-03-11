@@ -41,6 +41,7 @@ class FlightDataHandler:
     def unwrap(self, data):
         # splitting data into specific values
         self.time = data.t
+        self.test = data.test
         self.trace_length = len(self.time)
 
         if not(self.type=='pitl'):
@@ -466,11 +467,18 @@ class FlightDataHandler:
             except OSError:
                 pass
 
-    def compute_z_performance(self):
+    def compute_z_error(self):
         error = 0
-        for i in range(self.trace_length):
-            error = error + np.abs(self.setpoint_position_z[i] - self.position_z[i])
+        if (self.test=="step"):
+            # if test was a step skip the last 5 seconds
+            for i in range(self.trace_length-5000):
+                error = error + np.abs(self.setpoint_position_z[i] - self.position_z[i])
+        if (self.test=="sinus"):
+            # if test was a sinus remove the warm up in the first 5 seconds
+            for i in range(5000,self.trace_length):
+                error = error + np.abs(self.setpoint_position_z[i] - self.position_z[i])
         return error
+
 
     def motors_saturated(self):
         # return the number of time steps in which the controller was saturated

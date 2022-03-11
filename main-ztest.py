@@ -5,6 +5,8 @@ from cfSimulator import cfSimulation
 from cfSimulator import FlightDataHandler
 from testCases.zControlTests import zTestCase
 
+z_test_directory = 'z-test'
+
 duration  = 20     # duration of flight
 
 frequencies = [0, .25, .5, 1, 2, 3, 4, 8]
@@ -62,24 +64,31 @@ test_cases = [# STEPS -- OMEGA = 0
 
 if __name__ == "__main__":
 
-	# ref = Reference(reference)
+	# iterate over the test cases
 	for ref in test_cases:
+
+		# retrieve location and name of test output file
 		file_name=ref.trajectoryType+'-'+\
-		          str(ref.base)+'-'+str(ref.amplitude)+'-'+str(ref.omega)
-		file_path='flightdata/'+'z-test/'+file_name
+		          str(ref.base)+'-'+\
+		          str(ref.amplitude)+'-'+\
+		          str(ref.omega)
+		file_path=FlightDataHandler.data_directory+'/'+\
+		          z_test_directory+'/'+\
+		          file_name
+
+		# If test has not been executed, do it
+		# otherwise, print performance
 		if not(exists(file_path)):
 			print(" * Executing Test {}".format(file_name))
-			sim = cfSimulation() # initialize simulation objects
+			sim = cfSimulation()               # initialize simulation object
 			start_test = time.perf_counter()
-			storeObj = sim.run(ref, duration) # actual test execution
+			storeObj = sim.run(ref, duration)  # actual test execution
 			end_test = time.perf_counter()
-			print(" -- This test took " + str(end_test-start_test) + " seconds")
-
-			# store simulation results
-			storeObj.save('z-test/'+file_name)
+			print(" >> {} took {} seconds".format(file_name, str(end_test-start_test)))
+			storeObj.save(z_test_directory+'/'+file_name) # store simulation results
 		else :
 			print(" * Test {} already executed".format(file_name.split('/')[-1]),end =".  ")
 			storeObj = FlightDataHandler()
 			storeObj.open(file_path, file_name.split('/')[-1],True)
 			# show flight performance
-			print("   Flight performance: {}".format(storeObj.compute_z_performance()))
+			print("   Flight performance: {}".format(storeObj.compute_z_error()))
