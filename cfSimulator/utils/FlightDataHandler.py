@@ -31,77 +31,77 @@ class FlightDataHandler:
         self.experiment_name = str(experiment_name)
 
         with open(self.data_location, 'rb') as f:
-            self.data = pk.load(f)
-        self.type = self.data.type
-        self.unwrap()
+            data = pk.load(f)
+        self.type = data.type
+        self.unwrap(data)
         if not(silent):
             print('Reading data from file: \033[4m' + self.data_location + '\033[0m')
             print('Type of test is: ' + self.type)
 
-    def unwrap(self):
+    def unwrap(self, data):
         # splitting data into specific values
-        self.time = self.data.t
+        self.time = data.t
         self.trace_length = len(self.time)
 
         if not(self.type=='pitl'):
-            self.position_x = self.data.pos[0, :]
-            self.position_y = self.data.pos[1, :]
-            self.position_z = self.data.pos[2, :]
+            self.position_x = data.pos[0, :]
+            self.position_y = data.pos[1, :]
+            self.position_z = data.pos[2, :]
         else:
-            self.position_x = np.zeros(len(self.time))
-            self.position_y = np.zeros(len(self.time))
-            self.position_z = np.zeros(len(self.time))
-        self.estimated_position_x = self.data.est_pos[0, :]
-        self.estimated_position_y = self.data.est_pos[1, :]
-        self.estimated_position_z = self.data.est_pos[2, :]
-        self.setpoint_position_x = self.data.set_pt[0, :]
-        self.setpoint_position_y = self.data.set_pt[1, :]
-        self.setpoint_position_z = self.data.set_pt[2, :]
+            self.position_x = np.zeros(self.trace_length)
+            self.position_y = np.zeros(self.trace_length)
+            self.position_z = np.zeros(self.trace_length)
+        self.estimated_position_x = data.est_pos[0, :]
+        self.estimated_position_y = data.est_pos[1, :]
+        self.estimated_position_z = data.est_pos[2, :]
+        self.setpoint_position_x = data.set_pt[0, :]
+        self.setpoint_position_y = data.set_pt[1, :]
+        self.setpoint_position_z = data.set_pt[2, :]
 
         if not(self.type=='pitl'):
-            self.velocity_x = self.data.vel[0, :]
-            self.velocity_y = self.data.vel[1, :]
-            self.velocity_z = self.data.vel[2, :]
+            self.velocity_x = data.vel[0, :]
+            self.velocity_y = data.vel[1, :]
+            self.velocity_z = data.vel[2, :]
         else:
-            self.velocity_x = np.zeros(len(self.time))
-            self.velocity_y = np.zeros(len(self.time))
-            self.velocity_z = np.zeros(len(self.time))
-        self.estimated_velocity_x = self.data.est_vel[0, :]
-        self.estimated_velocity_y = self.data.est_vel[1, :]
-        self.estimated_velocity_z = self.data.est_vel[2, :]
+            self.velocity_x = np.zeros(self.trace_length)
+            self.velocity_y = np.zeros(self.trace_length)
+            self.velocity_z = np.zeros(self.trace_length)
+        self.estimated_velocity_x = data.est_vel[0, :]
+        self.estimated_velocity_y = data.est_vel[1, :]
+        self.estimated_velocity_z = data.est_vel[2, :]
 
-        self.acceleration_x = self.data.acc[0, :]
-        self.acceleration_y = self.data.acc[1, :]
-        self.acceleration_z = self.data.acc[2, :]
+        self.acceleration_x = data.acc[0, :]
+        self.acceleration_y = data.acc[1, :]
+        self.acceleration_z = data.acc[2, :]
 
         if not(self.type=='pitl'):
-            self.attitude_x = self.data.eta[0, :]
-            self.attitude_y = self.data.eta[1, :]
-            self.attitude_z = self.data.eta[2, :]
+            self.attitude_x = data.eta[0, :]
+            self.attitude_y = data.eta[1, :]
+            self.attitude_z = data.eta[2, :]
         else:
-            self.attitude_x = np.zeros(len(self.time))
-            self.attitude_y = np.zeros(len(self.time))
-            self.attitude_z = np.zeros(len(self.time))
-        self.gyro_x = self.data.gyro[0, :]
-        self.gyro_y = self.data.gyro[1, :]
-        self.gyro_z = self.data.gyro[2, :]
+            self.attitude_x = np.zeros(self.trace_length)
+            self.attitude_y = np.zeros(self.trace_length)
+            self.attitude_z = np.zeros(self.trace_length)
+        self.gyro_x = data.gyro[0, :]
+        self.gyro_y = data.gyro[1, :]
+        self.gyro_z = data.gyro[2, :]
 
-        self.pixel_count_x = self.data.pxCount[0, :]
-        self.pixel_count_y = self.data.pxCount[1, :]
-        self.range_z = self.data.zrange
+        self.pixel_count_x = data.pxCount[0, :]
+        self.pixel_count_y = data.pxCount[1, :]
+        self.range_z = data.zrange
         if not(self.type=='pitl'):
-            self.kalman_error_x = self.data.err_fd[1, :]
-            self.kalman_error_y = self.data.err_fd[2, :]
-            self.kalman_error_z = self.data.err_fd[0, :]
+            self.kalman_error_x = data.err_fd[1, :]
+            self.kalman_error_y = data.err_fd[2, :]
+            self.kalman_error_z = data.err_fd[0, :]
         else:
-            self.kalman_error_x = np.zeros(len(self.time))
-            self.kalman_error_y = np.zeros(len(self.time))
-            self.kalman_error_z = np.zeros(len(self.time))
+            self.kalman_error_x = np.zeros(self.trace_length)
+            self.kalman_error_y = np.zeros(self.trace_length)
+            self.kalman_error_z = np.zeros(self.trace_length)
 
-        self.control_motor_1 = self.data.u[0, :]
-        self.control_motor_2 = self.data.u[1, :]
-        self.control_motor_3 = self.data.u[2, :]
-        self.control_motor_4 = self.data.u[3, :]
+        self.control_motor_1 = data.u[0, :]
+        self.control_motor_2 = data.u[1, :]
+        self.control_motor_3 = data.u[2, :]
+        self.control_motor_4 = data.u[3, :]
 
     def save_csv(self, csv_location):
 
