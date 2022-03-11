@@ -1,6 +1,6 @@
 import numpy as np
 
-settle = 3 # wait this time to let the step settle before feeding sinusoidal
+settle = 5 # wait this time to let the step settle before feeding sinusoidal
 
 class zTestCase():
     
