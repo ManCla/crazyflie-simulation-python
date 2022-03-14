@@ -480,38 +480,31 @@ class FlightDataHandler:
     ##########################
 
     def analyse_z(self):
-        err         = 0  # error
         err_rel     = 0  # error normalized over setpoint
         mot_sat_tot = 0  # total time motors are saturated [# of time steps]
         hit_ground  = 0  # total time spent "hitting the ground" [# of time steps]
 
         thrust_min = 20000 # TO DO: not so nice that those are hard coded
         thrust_max = 65535 # possibly they should be defined in __init__()?
+        settle     = 5000  # TO DO 5000 should be taken from elsewhere
 
         if (self.test=="step"):
-            # if test was a step skip the last 5 seconds -- TO DO not nice that 5000 is hard-coded
-            time_range = range(1,self.trace_length-4999)
+            # if test was a step skip the "settle time"
+            time_range = range(1,self.trace_length-(settle-1))
         if (self.test=="sinus"):
             # if test was a sinus remove the warm up in the first 5 seconds
-            time_range = range(5000,self.trace_length)
+            time_range = range(settle,self.trace_length)
         
         for i in time_range:
             abs_error = np.abs(self.setpoint_position_z[i] - self.position_z[i])
-            err = err + abs_error
             err_rel = err_rel + abs_error/self.setpoint_position_z[i]
             mot_sat_tot = mot_sat_tot + \
                           (self.control_motor_1[i]<thrust_min+1 or\
                            self.control_motor_1[i]>thrust_max-1)
             hit_ground  = hit_ground + (self.position_z[i]<0.01)
-        self.z_error_cumulative     = err
         self.z_error_rel_cumulative = err_rel
-        self.motors_saturated_time  = mot_sat_tot
-        self.hit_ground_time        = hit_ground
-
-    def compute_z_error_cumulative(self):
-        if not(hasattr(self, "z_error_cumulative")):
-            self.analyse_z()
-        return self.z_error_cumulative
+        self.motors_saturated_time  = mot_sat_tot/(self.trace_length-settle)
+        self.hit_ground_time        = hit_ground/(self.trace_length-settle)
 
     def compute_z_error_rel_cumulative(self):
         if not(hasattr(self, "z_error_rel_cumulative")):
