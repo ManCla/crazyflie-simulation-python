@@ -11,7 +11,8 @@ from testCases.zControlTests import zTestCase
 import matplotlib.pyplot as plt
 import numpy as np
 
-z_test_directory = 'z-test'
+z_test_directory    = 'z-test'
+z_results_directory = 'z-aggregated'
 
 duration  = 20     # duration of flight
 
@@ -20,8 +21,10 @@ amplitudes  = [.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 10, 11, 1
 
 if __name__ == "__main__":
 
-	error      = np.zeros((len(amplitudes),len(frequencies)))
-	saturation = np.zeros((len(amplitudes),len(frequencies)))
+	z_error_cumulative     = np.zeros((len(amplitudes),len(frequencies)))
+	z_error_rel_cumulative = np.zeros((len(amplitudes),len(frequencies)))
+	motors_saturated       = np.zeros((len(amplitudes),len(frequencies)))
+	hit_ground             = np.zeros((len(amplitudes),len(frequencies)))
 
 	# iterate over the test cases
 	for i in range(len(frequencies)):
@@ -54,36 +57,20 @@ if __name__ == "__main__":
 				print(" >> {} took {} seconds".format(file_name, str(end_test-start_test)))
 				storeObj.save(z_test_directory+'/'+file_name) # store simulation results
 			else :
-				print(" * Test {} already executed".format(file_name.split('/')[-1]),end =".  ")
+				print(" * Test {} already executed".format(file_name.split('/')[-1]))
 				storeObj = FlightDataHandler()
 				storeObj.open(file_path, file_name.split('/')[-1],True)
 				# show flight performance
-				print("   Flight performance: {}".format(storeObj.compute_z_error()))
-				error[j,i] = storeObj.compute_z_error()
-				saturation[j,i] = storeObj.motors_saturated()
+				z_error_cumulative[j,i]     = storeObj.compute_z_error_cumulative()
+				z_error_rel_cumulative[j,i] = storeObj.compute_z_error_rel_cumulative()
+				motors_saturated[j,i]       = storeObj.motors_saturated()
+				hit_ground[j,i]             = storeObj.hit_ground()
 
-	# plot error heat map
-	fig, ax = plt.subplots(1, 2)
-
-	# ticks and ticks labels
-	x_ticks           = range(len(frequencies))
-	x_ticks_labels    = list(map(str,frequencies))
-	x_ticks_labels[0] = 'step'
-	y_ticks           = range(len(amplitudes))
-	y_ticks_labels    = list(map(str,amplitudes))
-	plt.setp(ax, xticks=x_ticks, xticklabels=x_ticks_labels,\
-		         yticks=y_ticks, yticklabels=y_ticks_labels)
-
-	ax[0].imshow(error,      cmap='hot', interpolation='nearest',origin='lower')
-	ax[0].set_title('cumulative error')
-	ax[1].imshow(saturation, cmap='hot', interpolation='nearest',origin='lower')
-	ax[1].set_title('total saturation time')
-
-	# add values inside cells
-	for i in range(len(frequencies)):
-		for j in range(len(amplitudes)):
-			ax[0].text(i,j,'%.2f'%error[j,i]     ,ha='center',va='center')
-			ax[1].text(i,j,'%.2f'%saturation[j,i],ha='center',va='center')
-
-	plt.show()
-	# code.interact(local=locals())
+	## write results to csv
+	out_path = FlightDataHandler.data_directory+'/'+z_results_directory+'/'
+	np.savetxt(out_path+'frequencies.csv', frequencies, delimiter=',')
+	np.savetxt(out_path+'amplitudes.csv', amplitudes, delimiter=',')
+	np.savetxt(out_path+'z_error_cumulative.csv', z_error_cumulative, delimiter=',')
+	np.savetxt(out_path+'z_error_rel_cumulative.csv', z_error_rel_cumulative, delimiter=',')
+	np.savetxt(out_path+'motors_saturated.csv', motors_saturated, delimiter=',')
+	np.savetxt(out_path+'hit_ground.csv', hit_ground, delimiter=',')
