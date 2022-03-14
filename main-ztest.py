@@ -71,18 +71,19 @@ if __name__ == "__main__":
 	x_ticks_labels[0] = 'step'
 	y_ticks           = range(len(amplitudes))
 	y_ticks_labels    = list(map(str,amplitudes))
+	plt.setp(ax, xticks=x_ticks, xticklabels=x_ticks_labels,\
+		         yticks=y_ticks, yticklabels=y_ticks_labels)
 
-	ax[0].imshow(error, cmap='hot', interpolation='nearest',origin='lower')
-	ax[0].set_title('error')
-	ax[0].set_xticks(x_ticks)
-	ax[0].set_xticklabels(x_ticks_labels)
-	ax[0].set_yticks(y_ticks)
-	ax[0].set_yticklabels(y_ticks_labels)
+	ax[0].imshow(error,      cmap='hot', interpolation='nearest',origin='lower')
+	ax[0].set_title('cumulative error')
 	ax[1].imshow(saturation, cmap='hot', interpolation='nearest',origin='lower')
-	ax[1].set_title('saturation')
-	ax[1].set_xticks(x_ticks)
-	ax[1].set_xticklabels(x_ticks_labels)
-	ax[1].set_yticks(y_ticks)
-	ax[1].set_yticklabels(y_ticks_labels)
+	ax[1].set_title('total saturation time')
+
+	# add values inside cells
+	for i in range(len(frequencies)):
+		for j in range(len(amplitudes)):
+			ax[0].text(i,j,'%.2f'%error[j,i]     ,ha='center',va='center')
+			ax[1].text(i,j,'%.2f'%saturation[j,i],ha='center',va='center')
+
 	plt.show()
 	# code.interact(local=locals())
