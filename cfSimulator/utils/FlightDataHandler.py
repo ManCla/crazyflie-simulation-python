@@ -481,6 +481,7 @@ class FlightDataHandler:
 
     def analyse_z(self):
         err         = 0  # error
+        err_rel     = 0  # error normalized over setpoint
         mot_sat_tot = 0  # total time motors are saturated [# of time steps]
         hit_ground  = 0  # total time spent "hitting the ground" [# of time steps]
 
@@ -489,25 +490,33 @@ class FlightDataHandler:
 
         if (self.test=="step"):
             # if test was a step skip the last 5 seconds -- TO DO not nice that 5000 is hard-coded
-            time_range = range(self.trace_length-5000)
+            time_range = range(1,self.trace_length-4999)
         if (self.test=="sinus"):
             # if test was a sinus remove the warm up in the first 5 seconds
             time_range = range(5000,self.trace_length)
         
         for i in time_range:
-            err = err + np.abs(self.setpoint_position_z[i] - self.position_z[i])
+            abs_error = np.abs(self.setpoint_position_z[i] - self.position_z[i])
+            err = err + abs_error
+            err_rel = err_rel + abs_error/self.setpoint_position_z[i]
             mot_sat_tot = mot_sat_tot + \
                           (self.control_motor_1[i]<thrust_min+1 or\
                            self.control_motor_1[i]>thrust_max-1)
             hit_ground  = hit_ground + (self.position_z[i]<0.01)
-        self.error_cumulative      = err
-        self.motors_saturated_time = mot_sat_tot
-        self.hit_ground_time       = hit_ground
+        self.z_error_cumulative     = err
+        self.z_error_rel_cumulative = err_rel
+        self.motors_saturated_time  = mot_sat_tot
+        self.hit_ground_time        = hit_ground
 
-    def compute_z_error(self):
-        if not(hasattr(self, "error_cumulative")):
+    def compute_z_error_cumulative(self):
+        if not(hasattr(self, "z_error_cumulative")):
             self.analyse_z()
-        return self.error_cumulative
+        return self.z_error_cumulative
+
+    def compute_z_error_rel_cumulative(self):
+        if not(hasattr(self, "z_error_rel_cumulative")):
+            self.analyse_z()
+        return self.z_error_rel_cumulative
 
     def motors_saturated(self):
         # return the number of time steps in which the controller was saturated
