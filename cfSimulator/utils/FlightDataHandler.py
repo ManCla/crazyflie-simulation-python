@@ -467,15 +467,20 @@ class FlightDataHandler:
             except OSError:
                 pass
 
+    ##########################
+    ### ANALYSIS FUNCTIONS ###
+    ##########################
+
     def analyse_z(self):
-        err = 0          # error
-        mot_sat_tot = 0  # total time motors are saturated
+        err         = 0  # error
+        mot_sat_tot = 0  # total time motors are saturated [# of time steps]
+        hit_ground  = 0  # total time spent "hitting the ground" [# of time steps]
 
         thrust_min = 20000 # TO DO: not so nice that those are hard coded
         thrust_max = 65535 # possibly they should be defined in __init__()?
 
         if (self.test=="step"):
-            # if test was a step skip the last 5 seconds
+            # if test was a step skip the last 5 seconds -- TO DO not nice that 5000 is hard-coded
             time_range = range(self.trace_length-5000)
         if (self.test=="sinus"):
             # if test was a sinus remove the warm up in the first 5 seconds
@@ -486,8 +491,10 @@ class FlightDataHandler:
             mot_sat_tot = mot_sat_tot + \
                           (self.control_motor_1[i]<thrust_min+1 or\
                            self.control_motor_1[i]<thrust_max-1)
+            hit_ground  = hit_ground + (self.position_z[i]<0.01)
         self.error_cumulative      = err
         self.motors_saturated_time = mot_sat_tot
+        self.hit_ground_time       = hit_ground
 
     def compute_z_error(self):
         if not(hasattr(self, "error_cumulative")):
@@ -499,3 +506,8 @@ class FlightDataHandler:
         if not(hasattr(self, "motors_saturated_time")):
             self.analyse_z()
         return self.motors_saturated_time
+
+    def hit_ground(self):
+        if not(hasattr(self, "hit_ground_time")):
+            self.analyse_z()
+        return self.hit_ground_time
