@@ -498,7 +498,7 @@ class FlightDataHandler:
             err = err + np.abs(self.setpoint_position_z[i] - self.position_z[i])
             mot_sat_tot = mot_sat_tot + \
                           (self.control_motor_1[i]<thrust_min+1 or\
-                           self.control_motor_1[i]<thrust_max-1)
+                           self.control_motor_1[i]>thrust_max-1)
             hit_ground  = hit_ground + (self.position_z[i]<0.01)
         self.error_cumulative      = err
         self.motors_saturated_time = mot_sat_tot
