@@ -104,6 +104,10 @@ class FlightDataHandler:
         self.control_motor_3 = data.u[2, :]
         self.control_motor_4 = data.u[3, :]
 
+    ################################
+    ### PDF GENERATION FUNCTIONS ###
+    ################################
+
     def save_csv(self, csv_location):
 
         with open(csv_location, 'w') as f:
@@ -279,6 +283,37 @@ class FlightDataHandler:
             f.write(r'}' + '\n')
             f.write(r'\end{document}' + '\n')
 
+    def pdf(self, experiment_name):
+        # first save the data to an intermediate csv file
+        intermediate_data_file = "data.csv"
+        intermediate_latex_file = experiment_name + ".tex"
+        self.save_csv(intermediate_data_file)
+        print('* saved data to intermediate file: \033[33m' + str(intermediate_data_file) + '\033[0m')
+
+        # now do the plotting
+        self.save_latex(intermediate_latex_file, intermediate_data_file)
+        print('* saved tex to intermediate file: \033[33m' + str(intermediate_latex_file) + '\033[0m')
+
+        # you want to use lualatex because there could be a lot of data
+        os.system("lualatex " + intermediate_latex_file + " &>/dev/null")
+        print('* compiled latex plot: \033[33m' + str(experiment_name) + '.pdf\033[0m')
+
+        # then remove intermediate files
+        if remove_intermediate:
+            try:
+                os.remove(intermediate_data_file)
+                print('* removed intermediate file: \033[33m' + str(intermediate_data_file) + '\033[0m')
+                os.remove(intermediate_latex_file)
+                os.remove(experiment_name + ".aux")
+                os.remove(experiment_name + ".log")
+                print('* removed intermediate file: \033[33m' + str(intermediate_latex_file) + '\033[0m + .aux .log')
+            except OSError:
+                pass
+
+    ##########################
+    ### PLOTTING FUNCTIONS ###
+    ##########################
+
     def trajectoryPlot(self):
         if not(self.type=='pitl'):# plot trajectory in space
             plt.figure('3D trajectory')
@@ -439,33 +474,6 @@ class FlightDataHandler:
         self.sensorReadingsPlot()
         self.controlActionPlot()
         plt.show()
-
-    def pdf(self, experiment_name):
-        # first save the data to an intermediate csv file
-        intermediate_data_file = "data.csv"
-        intermediate_latex_file = experiment_name + ".tex"
-        self.save_csv(intermediate_data_file)
-        print('* saved data to intermediate file: \033[33m' + str(intermediate_data_file) + '\033[0m')
-
-        # now do the plotting
-        self.save_latex(intermediate_latex_file, intermediate_data_file)
-        print('* saved tex to intermediate file: \033[33m' + str(intermediate_latex_file) + '\033[0m')
-
-        # you want to use lualatex because there could be a lot of data
-        os.system("lualatex " + intermediate_latex_file + " &>/dev/null")
-        print('* compiled latex plot: \033[33m' + str(experiment_name) + '.pdf\033[0m')
-
-        # then remove intermediate files
-        if remove_intermediate:
-            try:
-                os.remove(intermediate_data_file)
-                print('* removed intermediate file: \033[33m' + str(intermediate_data_file) + '\033[0m')
-                os.remove(intermediate_latex_file)
-                os.remove(experiment_name + ".aux")
-                os.remove(experiment_name + ".log")
-                print('* removed intermediate file: \033[33m' + str(intermediate_latex_file) + '\033[0m + .aux .log')
-            except OSError:
-                pass
 
     ##########################
     ### ANALYSIS FUNCTIONS ###
