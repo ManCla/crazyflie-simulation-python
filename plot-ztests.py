@@ -21,7 +21,7 @@ if __name__ == "__main__":
         hit_ground = hit_ground[:,1:num_freqs]
 
     # generate plotting objects
-    fig, ax = plt.subplots(1, 2)
+    fig, ax = plt.subplots(1, 3)
 
     # ticks and ticks labels
     x_ticks           = range(len(frequencies))
@@ -37,12 +37,15 @@ if __name__ == "__main__":
     ax[0].set_title('cumulative error relative (to sp)')
     ax[1].imshow(motors_saturated, cmap='jet', interpolation='nearest',origin='lower')
     ax[1].set_title('total saturation time')
+    ax[2].imshow(hit_ground, cmap='jet', interpolation='nearest',origin='lower')
+    ax[2].set_title('time hitting ground')
 
     # add values inside cells
     for i in range(len(frequencies)):
         for j in range(len(amplitudes)):
             ax[0].text(i,j,'%d'%(z_error_rel_cumulative[j,i]/z_error_rel_cumulative[0,0]),ha='center',va='center')
-            ax[1].text(i,j,'%.2f'%(motors_saturated[j,i]),      ha='center',va='center')
+            ax[1].text(i,j,'%.2f'%(motors_saturated[j,i]),ha='center',va='center')
+            ax[2].text(i,j,'%.2f'%(hit_ground[j,i]),ha='center',va='center')
 
     plt.show()
     # code.interact(local=locals())
