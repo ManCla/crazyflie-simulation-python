@@ -61,7 +61,6 @@ if __name__ == "__main__":
 				storeObj = FlightDataHandler()
 				storeObj.open(file_path, file_name.split('/')[-1],True)
 				# show flight performance
-				z_error_cumulative[j,i]     = storeObj.compute_z_error_cumulative()
 				z_error_rel_cumulative[j,i] = storeObj.compute_z_error_rel_cumulative()
 				motors_saturated[j,i]       = storeObj.motors_saturated()
 				hit_ground[j,i]             = storeObj.hit_ground()
@@ -70,7 +69,6 @@ if __name__ == "__main__":
 	out_path = FlightDataHandler.data_directory+'/'+z_results_directory+'/'
 	np.savetxt(out_path+'frequencies.csv', frequencies, delimiter=',')
 	np.savetxt(out_path+'amplitudes.csv', amplitudes, delimiter=',')
-	np.savetxt(out_path+'z_error_cumulative.csv', z_error_cumulative, delimiter=',')
 	np.savetxt(out_path+'z_error_rel_cumulative.csv', z_error_rel_cumulative, delimiter=',')
 	np.savetxt(out_path+'motors_saturated.csv', motors_saturated, delimiter=',')
 	np.savetxt(out_path+'hit_ground.csv', hit_ground, delimiter=',')
