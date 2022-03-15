@@ -508,7 +508,7 @@ class FlightDataHandler:
             hit_ground  = hit_ground + (self.position_z[i]<0.01)
         # finalize analysis
         self.z_error_rel_cumulative = err_rel
-        self/z_max_error            = max_error
+        self.z_max_error            = max_error
         # compute saturation and ground time as percentage of total test time
         self.motors_saturated_time  = mot_sat_tot/(self.trace_length-settle)
         self.hit_ground_time        = hit_ground/(self.trace_length-settle)
