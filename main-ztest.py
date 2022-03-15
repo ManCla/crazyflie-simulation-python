@@ -63,6 +63,7 @@ if __name__ == "__main__":
 				storeObj.open(file_path, file_name.split('/')[-1],True)
 				# show flight performance
 				z_error_rel_cumulative[j,i] = storeObj.compute_z_error_rel_cumulative()
+				z_max_error[j,i]            = storeObj.compute_z_max_error()
 				motors_saturated[j,i]       = storeObj.motors_saturated()
 				hit_ground[j,i]             = storeObj.hit_ground()
 
