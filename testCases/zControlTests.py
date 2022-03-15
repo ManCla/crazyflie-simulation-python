@@ -1,6 +1,6 @@
 import numpy as np
 
-settle = 5 # wait this time to let the step settle before feeding sinusoidal
+settle = 10 # wait this time to let the step settle before feeding sinusoidal
 
 '''
 this class implements a test case of the Z controller on the base of 
