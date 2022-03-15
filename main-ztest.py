@@ -21,8 +21,8 @@ amplitudes  = [.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 10, 11, 1
 
 if __name__ == "__main__":
 
-	z_error_cumulative     = np.zeros((len(amplitudes),len(frequencies)))
 	z_error_rel_cumulative = np.zeros((len(amplitudes),len(frequencies)))
+	z_max_error            = np.zeros((len(amplitudes),len(frequencies)))
 	motors_saturated       = np.zeros((len(amplitudes),len(frequencies)))
 	hit_ground             = np.zeros((len(amplitudes),len(frequencies)))
 
@@ -67,8 +67,11 @@ if __name__ == "__main__":
 
 	## write results to csv
 	out_path = FlightDataHandler.data_directory+'/'+z_results_directory+'/'
+	# frequencies and amplitudes vectors
 	np.savetxt(out_path+'frequencies.csv', frequencies, delimiter=',')
 	np.savetxt(out_path+'amplitudes.csv', amplitudes, delimiter=',')
+	# actual test results
 	np.savetxt(out_path+'z_error_rel_cumulative.csv', z_error_rel_cumulative, delimiter=',')
+	np.savetxt(out_path+'z_max_error.csv', z_max_error, delimiter=',')
 	np.savetxt(out_path+'motors_saturated.csv', motors_saturated, delimiter=',')
 	np.savetxt(out_path+'hit_ground.csv', hit_ground, delimiter=',')
