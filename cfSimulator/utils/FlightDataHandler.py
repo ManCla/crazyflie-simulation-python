@@ -483,10 +483,11 @@ class FlightDataHandler:
         err_rel     = 0  # error normalized over setpoint
         mot_sat_tot = 0  # total time motors are saturated [# of time steps]
         hit_ground  = 0  # total time spent "hitting the ground" [# of time steps]
+        max_error   = 0
 
         thrust_min = 20000 # TO DO: not so nice that those are hard coded
         thrust_max = 65535 # possibly they should be defined in __init__()?
-        settle     = 5000  # TO DO 5000 should be taken from elsewhere
+        settle     = 10000  # TO DO settle time should be taken from elsewhere
 
         if (self.test=="step"):
             # if test was a step skip the "settle time"
@@ -494,15 +495,20 @@ class FlightDataHandler:
         if (self.test=="sinus"):
             # if test was a sinus remove the warm up in the first 5 seconds
             time_range = range(settle,self.trace_length)
-        
+
+        # iterate over time and perform actual analysis
         for i in time_range:
             abs_error = np.abs(self.setpoint_position_z[i] - self.position_z[i])
+            if abs_error>max_error :
+                max_error = abs_error
             err_rel = err_rel + abs_error/self.setpoint_position_z[i]
             mot_sat_tot = mot_sat_tot + \
                           (self.control_motor_1[i]<thrust_min+1 or\
                            self.control_motor_1[i]>thrust_max-1)
             hit_ground  = hit_ground + (self.position_z[i]<0.01)
+        # finalize analysis
         self.z_error_rel_cumulative = err_rel
+        # compute saturation and ground time as percentage of total test time
         self.motors_saturated_time  = mot_sat_tot/(self.trace_length-settle)
         self.hit_ground_time        = hit_ground/(self.trace_length-settle)
 
