@@ -14,7 +14,7 @@ import numpy as np
 z_test_directory    = 'z-test'
 z_results_directory = 'z-aggregated'
 
-duration  = 20     # duration of flight
+duration  = 30     # duration of flight
 
 frequencies = [0, .25, .5, 1, 2, 3, 4, 8]
 amplitudes  = [.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20]
