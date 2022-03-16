@@ -469,9 +469,9 @@ class FlightDataHandler:
         print('* figure 4:\033[33m motor control signals (u1,u2,u3,u4)\033[0m')
 
     def show(self):
-        self.trajectoryPlot()
+        # self.trajectoryPlot()
         self.positionSpeedPlot()
-        self.sensorReadingsPlot()
+        # self.sensorReadingsPlot()
         self.controlActionPlot()
         plt.show()
 
@@ -481,6 +481,7 @@ class FlightDataHandler:
 
     def analyse_z(self):
         err_rel     = 0  # error normalized over setpoint
+        err_abs_cum = 0 
         mot_sat_tot = 0  # total time motors are saturated [# of time steps]
         hit_ground  = 0  # total time spent "hitting the ground" [# of time steps]
         max_error   = 0
@@ -502,21 +503,28 @@ class FlightDataHandler:
             if abs_error>max_error :
                 max_error = abs_error
             err_rel = err_rel + abs_error/self.setpoint_position_z[i]
+            err_abs_cum = err_abs_cum + abs_error
             mot_sat_tot = mot_sat_tot + \
                           (self.control_motor_1[i]<thrust_min+1 or\
                            self.control_motor_1[i]>thrust_max-1)
             hit_ground  = hit_ground + (self.position_z[i]<0.01)
         # finalize analysis
-        self.z_error_rel_cumulative = err_rel
+        self.z_avg_error            = err_abs_cum/(self.trace_length-settle)
+        self.z_avg_error_rel        = err_rel/(self.trace_length-settle)
         self.z_max_error            = max_error
         # compute saturation and ground time as percentage of total test time
         self.motors_saturated_time  = mot_sat_tot/(self.trace_length-settle)
         self.hit_ground_time        = hit_ground/(self.trace_length-settle)
 
-    def compute_z_error_rel_cumulative(self):
-        if not(hasattr(self, "z_error_rel_cumulative")):
+    def compute_z_avg_error(self):
+        if not(hasattr(self, "z_avg_error")):
             self.analyse_z()
-        return self.z_error_rel_cumulative
+        return self.z_avg_error
+
+    def compute_z_avg_error_rel(self):
+        if not(hasattr(self, "z_avg_error_rel")):
+            self.analyse_z()
+        return self.z_avg_error_rel
 
     def compute_z_max_error(self):
         if not(hasattr(self, "z_max_error")):
