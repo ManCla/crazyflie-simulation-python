@@ -58,16 +58,17 @@ if __name__ == "__main__":
 				end_test   = time.perf_counter()
 				print(" >> {} took {} seconds".format(file_name, str(end_test-start_test)))
 				storeObj.save(z_test_directory+'/'+file_name) # store simulation results
+				storeObj.unwrap(storeObj)
 			else :
 				print(" * Test {} already executed".format(file_name.split('/')[-1]))
 				storeObj = FlightDataHandler()
 				storeObj.open(file_path, file_name.split('/')[-1],True)
 				# show flight performance
-				z_avg_error[j,i]        = storeObj.compute_z_avg_error()
-				z_avg_error_rel[j,i]        = storeObj.compute_z_avg_error_rel()
-				z_max_error[j,i]            = storeObj.compute_z_max_error()
-				motors_saturated[j,i]       = storeObj.motors_saturated()
-				hit_ground[j,i]             = storeObj.hit_ground()
+			z_avg_error[j,i]            = storeObj.compute_z_avg_error()
+			z_avg_error_rel[j,i]        = storeObj.compute_z_avg_error_rel()
+			z_max_error[j,i]            = storeObj.compute_z_max_error()
+			motors_saturated[j,i]       = storeObj.motors_saturated()
+			hit_ground[j,i]             = storeObj.hit_ground()
 
 	## write results to csv
 	out_path = FlightDataHandler.data_directory+'/'+z_results_directory+'/'

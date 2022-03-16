@@ -18,6 +18,7 @@ if __name__ == "__main__":
     if exclude_step_responses:
         num_freqs = len(frequencies)
         frequencies = frequencies[1:num_freqs]
+        z_avg_error = z_avg_error[:,1:num_freqs]
         z_avg_error_rel = z_avg_error_rel[:,1:num_freqs]
         z_max_error = z_max_error[:,1:num_freqs]
         motors_saturated = motors_saturated[:,1:num_freqs]
