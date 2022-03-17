@@ -3,6 +3,8 @@ import time
 import pickle as pk
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.fft as fft
+import scipy.signal as signal
 
 # global variable: configuration
 # should I remove intermediate files or not
@@ -459,11 +461,26 @@ class FlightDataHandler:
         axs[1, 1].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
         print('* figure 4:\033[33m motor control signals (u1,u2,u3,u4)\033[0m')
 
+    def z_loop_frequency_plot(self):
+        fig, axs = plt.subplots(2, 1, figsize=chosen_size)
+        plt.subplots_adjust(wspace=0.2, hspace=1)
+        freq_range_plot = 1
+        axs[0].title.set_text('Frequency spectrum of z reference')
+        axs[0].plot(self.z_fft_freq, self.z_ref_fft, 'k')
+        axs[0].set_xlim([-freq_range_plot, freq_range_plot])
+        axs[0].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
+
+        axs[1].title.set_text('Frequency spectrum of z position')
+        axs[1].plot(self.z_fft_freq, self.z_pos_fft, 'k')
+        axs[1].set_xlim([-freq_range_plot,freq_range_plot])
+        axs[1].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
+
     def show(self):
         # self.trajectoryPlot()
         self.positionSpeedPlot()
         # self.sensorReadingsPlot()
         self.controlActionPlot()
+        self.z_loop_frequency_plot()
         plt.show()
 
     ##########################
@@ -499,6 +516,13 @@ class FlightDataHandler:
                           (self.control_motor_1[i]<thrust_min+1 or\
                            self.control_motor_1[i]>thrust_max-1)
             hit_ground  = hit_ground + (self.position_z[i]<0.01)
+        # detect filtering
+        if (self.test == "sinus"):
+            z_ref_detrended = signal.detrend(self.setpoint_position_z[settle:self.trace_length],type='constant')
+            z_pos_detrended = signal.detrend(self.position_z[settle:self.trace_length],type='constant')
+            self.z_ref_fft  = list(map(abs, fft.fftshift(fft.fft(z_ref_detrended))))
+            self.z_pos_fft  = list(map(abs, fft.fftshift(fft.fft(z_pos_detrended))))
+            self.z_fft_freq = fft.fftshift(fft.fftfreq((self.trace_length-settle), d=0.001))
         # finalize analysis
         self.z_avg_error            = err_abs_cum/(self.trace_length-settle)
         self.z_avg_error_rel        = err_rel/(self.trace_length-settle)
@@ -506,6 +530,11 @@ class FlightDataHandler:
         # compute saturation and ground time as percentage of total test time
         self.motors_saturated_time  = mot_sat_tot/(self.trace_length-settle)
         self.hit_ground_time        = hit_ground/(self.trace_length-settle)
+        # check for filtering of reference
+        if (self.test == "sinus"):
+            index_input_freq = np.where(self.z_ref_fft== np.amax(self.z_ref_fft))
+            self.z_filtering =  self.z_pos_fft[index_input_freq[0][0]]\
+                               /self.z_ref_fft[index_input_freq[0][0]]
 
     def compute_z_avg_error(self):
         if not(hasattr(self, "z_avg_error")):
@@ -532,3 +561,10 @@ class FlightDataHandler:
         if not(hasattr(self, "hit_ground_time")):
             self.analyse_z()
         return self.hit_ground_time
+
+    def compute_z_filtering(self):
+        if self.test!="sinus":
+            return 0
+        if not(hasattr(self, "z_filtering")):
+            self.analyse_z()
+        return self.z_filtering
