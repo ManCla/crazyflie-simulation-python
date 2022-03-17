@@ -7,6 +7,10 @@ exclude_step_responses = True
 
 if __name__ == "__main__":
 
+    #######################
+    ### read input data ###
+    #######################
+
     frequencies = np.genfromtxt(path+'frequencies.csv', delimiter=',')
     amplitudes  = np.genfromtxt(path+'amplitudes.csv', delimiter=',') 
     z_avg_error            = np.genfromtxt(path+'z_avg_error.csv', delimiter=',')
@@ -25,6 +29,10 @@ if __name__ == "__main__":
         motors_saturated = motors_saturated[:,1:num_freqs]
         hit_ground = hit_ground[:,1:num_freqs]
         z_filtering = z_filtering[:,1:num_freqs]
+
+    ################
+    ### plotting ###
+    ################
 
     # generate plotting objects
     fig1, ax1 = plt.subplots(2, 2)
@@ -46,7 +54,7 @@ if __name__ == "__main__":
     ax1[0,1].imshow(motors_saturated, cmap='jet', interpolation='nearest',origin='lower',aspect=aspect)
     ax1[0,1].set_title('percentage of time that motors are saturated')
     ax1[1,0].imshow(z_filtering, cmap='jet', interpolation='nearest',origin='lower',aspect=aspect)
-    ax1[1,0].set_title('how much of the z reference is found in the output')
+    ax1[1,0].set_title('Gain at highest freq component of input')
     # set axis ticks
     plt.setp(ax1, xticks=x_ticks, xticklabels=x_ticks_labels,xlabel=x_label,\
                   yticks=y_ticks, yticklabels=y_ticks_labels,ylabel=y_label)
