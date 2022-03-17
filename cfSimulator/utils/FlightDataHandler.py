@@ -17,6 +17,14 @@ chosen_grid_linewidth = 0.3
 chosen_grid_linestyle = '--'
 chosen_grid_color = 'gray'
 
+# encoding of behaviours
+bh_undefined       = 0
+bh_good_tracking   = 1
+bh_filtering       = 2
+bh_good_tracking_extra = 3 
+bh_sat_no_tracking = 4
+bh_something_wrong = 5
+
 class FlightDataHandler:
     data_directory = "flightdata"
     date_format    = '%Y%m%d_%H%M%S'
@@ -536,11 +544,32 @@ class FlightDataHandler:
             index_input_freq = np.where(self.z_ref_fft== np.amax(self.z_ref_fft))
             self.z_filtering =  self.z_pos_fft[index_input_freq[0][0]]\
                                /self.z_ref_fft[index_input_freq[0][0]]
+        # define behavioural region on the base of: 
+        #  - hitting saturations
+        #  - good reference tracking
+        #  - filtering reference
+        self.behaviour = bh_undefined
+        if (self.test == "sinus"):
+            if self.motors_saturated_time<motors_saturated_threshold : 
+                # we have not saturated
+                if abs(self.z_filtering-1)>filtering_threshold :
+                    self.behaviour = bh_filtering
+                else :
+                    if self.z_avg_error_rel>avg_error_rel_threshold :
+                        self.behaviour = bh_something_wrong
+                    else :
+                        self.behaviour = bh_good_tracking
+            else :
+                # we have saturated
+                if self.z_avg_error_rel<avg_error_rel_threshold :
+                    self.behaviour = bh_good_tracking_extra
+                else :
+                    self.behaviour = bh_sat_no_tracking
 
-    def compute_z_avg_error(self):
-        if not(hasattr(self, "z_avg_error")):
+    def compute_z_avg_error_abs(self):
+        if not(hasattr(self, "z_avg_error_abs")):
             self.analyse_z()
-        return self.z_avg_error
+        return self.z_avg_error_abs
 
     def compute_z_avg_error_rel(self):
         if not(hasattr(self, "z_avg_error_rel")):
@@ -569,3 +598,10 @@ class FlightDataHandler:
         if not(hasattr(self, "z_filtering")):
             self.analyse_z()
         return self.z_filtering
+
+    def compute_behaviour(self):
+        if self.test!="sinus":
+            return bh_undefined
+        if not(hasattr(self, "behaviour")):
+            self.analyse_z()
+        return self.behaviour

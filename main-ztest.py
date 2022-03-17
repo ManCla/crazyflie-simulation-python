@@ -22,12 +22,13 @@ amplitudes  = [.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6,\
 
 if __name__ == "__main__":
 
-	z_avg_error            = np.zeros((len(amplitudes),len(frequencies)))
-	z_avg_error_rel        = np.zeros((len(amplitudes),len(frequencies)))
-	z_max_error            = np.zeros((len(amplitudes),len(frequencies)))
-	motors_saturated       = np.zeros((len(amplitudes),len(frequencies)))
-	hit_ground             = np.zeros((len(amplitudes),len(frequencies)))
-	z_filtering            = np.zeros((len(amplitudes),len(frequencies)))
+	z_avg_error      = np.zeros((len(amplitudes),len(frequencies)))
+	z_avg_error_rel  = np.zeros((len(amplitudes),len(frequencies)))
+	z_max_error      = np.zeros((len(amplitudes),len(frequencies)))
+	motors_saturated = np.zeros((len(amplitudes),len(frequencies)))
+	hit_ground       = np.zeros((len(amplitudes),len(frequencies)))
+	z_filtering      = np.zeros((len(amplitudes),len(frequencies)))
+	behaviour        = np.zeros((len(amplitudes),len(frequencies)))
 
 	# iterate over the test cases
 	for i in range(len(frequencies)):
@@ -65,12 +66,13 @@ if __name__ == "__main__":
 				storeObj = FlightDataHandler()
 				storeObj.open(file_path, file_name.split('/')[-1],True)
 				# show flight performance
-			z_avg_error[j,i]            = storeObj.compute_z_avg_error()
-			z_avg_error_rel[j,i]        = storeObj.compute_z_avg_error_rel()
-			z_max_error[j,i]            = storeObj.compute_z_max_error()
-			motors_saturated[j,i]       = storeObj.motors_saturated()
-			hit_ground[j,i]             = storeObj.hit_ground()
-			z_filtering[j,i]            = storeObj.compute_z_filtering()
+			z_avg_error[j,i]      = storeObj.compute_z_avg_error_abs()
+			z_avg_error_rel[j,i]  = storeObj.compute_z_avg_error_rel()
+			z_max_error[j,i]      = storeObj.compute_z_max_error()
+			motors_saturated[j,i] = storeObj.motors_saturated()
+			hit_ground[j,i]       = storeObj.hit_ground()
+			z_filtering[j,i]      = storeObj.compute_z_filtering()
+			behaviour[j,i]        = storeObj.compute_behaviour()
 
 	## write results to csv
 	out_path = FlightDataHandler.data_directory+'/'+z_results_directory+'/'
@@ -78,9 +80,10 @@ if __name__ == "__main__":
 	np.savetxt(out_path+'frequencies.csv', frequencies, delimiter=',')
 	np.savetxt(out_path+'amplitudes.csv', amplitudes, delimiter=',')
 	# actual test results
-	np.savetxt(out_path+'z_avg_error.csv', z_avg_error, delimiter=',')
+	np.savetxt(out_path+'z_avg_error_abs.csv', z_avg_error, delimiter=',')
 	np.savetxt(out_path+'z_avg_error_rel.csv', z_avg_error_rel, delimiter=',')
 	np.savetxt(out_path+'z_max_error.csv', z_max_error, delimiter=',')
 	np.savetxt(out_path+'motors_saturated.csv', motors_saturated, delimiter=',')
 	np.savetxt(out_path+'hit_ground.csv', hit_ground, delimiter=',')
 	np.savetxt(out_path+'z_filtering.csv', z_filtering, delimiter=',')
+	np.savetxt(out_path+'behaviour.csv', behaviour, delimiter=',')

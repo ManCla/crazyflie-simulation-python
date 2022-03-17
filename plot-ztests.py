@@ -13,26 +13,37 @@ if __name__ == "__main__":
 
     frequencies = np.genfromtxt(path+'frequencies.csv', delimiter=',')
     amplitudes  = np.genfromtxt(path+'amplitudes.csv', delimiter=',') 
-    z_avg_error            = np.genfromtxt(path+'z_avg_error.csv', delimiter=',')
+    z_avg_error_abs        = np.genfromtxt(path+'z_avg_error_abs.csv', delimiter=',')
     z_avg_error_rel        = np.genfromtxt(path+'z_avg_error_rel.csv', delimiter=',')
     z_max_error            = np.genfromtxt(path+'z_max_error.csv', delimiter=',')
     motors_saturated       = np.genfromtxt(path+'motors_saturated.csv', delimiter=',')
     hit_ground             = np.genfromtxt(path+'hit_ground.csv', delimiter=',')
     z_filtering            = np.genfromtxt(path+'z_filtering.csv', delimiter=',')
+    behaviour              = np.genfromtxt(path+'behaviour.csv', delimiter=',',dtype=np.int16)
 
     if exclude_step_responses:
         num_freqs = len(frequencies)
         frequencies = frequencies[1:num_freqs]
-        z_avg_error = z_avg_error[:,1:num_freqs]
+        z_avg_error_abs = z_avg_error_abs[:,1:num_freqs]
         z_avg_error_rel = z_avg_error_rel[:,1:num_freqs]
         z_max_error = z_max_error[:,1:num_freqs]
         motors_saturated = motors_saturated[:,1:num_freqs]
         hit_ground = hit_ground[:,1:num_freqs]
         z_filtering = z_filtering[:,1:num_freqs]
+        behaviour = behaviour[:,1:num_freqs]
 
     ################
     ### plotting ###
     ################
+
+    # behaviour palette
+    bh_palette = np.array([[255,255,255],  # black: bh_undefined
+                           [  0,255,  0],  # green: bh_good_tracking
+                           [  0,  0,255],  # blue : bh_filtering
+                           [  0,255,255],  # azure: bh_good_tracking_extra
+                           [255,  0,  0],  # red  : bh_sat_no_tracking
+                           [  0,  0,  0]]) # dark : bh_something_wrong
+    behaviour_plot = bh_palette[behaviour]
 
     # generate plotting objects
     fig1, ax1 = plt.subplots(2, 2)
@@ -49,12 +60,14 @@ if __name__ == "__main__":
 
     ### Error plots ###
     aspect='0.5'
-    ax1[0,0].imshow(z_avg_error, cmap='jet', interpolation='nearest',origin='lower',aspect=aspect)
+    ax1[0,0].imshow(z_avg_error_rel, cmap='jet', interpolation='nearest',origin='lower',aspect=aspect)
     ax1[0,0].set_title('average error')
     ax1[0,1].imshow(motors_saturated, cmap='jet', interpolation='nearest',origin='lower',aspect=aspect)
     ax1[0,1].set_title('percentage of time that motors are saturated')
     ax1[1,0].imshow(z_filtering, cmap='jet', interpolation='nearest',origin='lower',aspect=aspect)
     ax1[1,0].set_title('Gain at highest freq component of input')
+    ax1[1,1].imshow(behaviour_plot,origin='lower',aspect=aspect)
+    ax1[1,1].set_title('Gain at highest freq component of input')
     # set axis ticks
     plt.setp(ax1, xticks=x_ticks, xticklabels=x_ticks_labels,xlabel=x_label,\
                   yticks=y_ticks, yticklabels=y_ticks_labels,ylabel=y_label)
