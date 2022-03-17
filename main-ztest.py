@@ -27,6 +27,7 @@ if __name__ == "__main__":
 	z_max_error            = np.zeros((len(amplitudes),len(frequencies)))
 	motors_saturated       = np.zeros((len(amplitudes),len(frequencies)))
 	hit_ground             = np.zeros((len(amplitudes),len(frequencies)))
+	z_filtering            = np.zeros((len(amplitudes),len(frequencies)))
 
 	# iterate over the test cases
 	for i in range(len(frequencies)):
@@ -69,6 +70,7 @@ if __name__ == "__main__":
 			z_max_error[j,i]            = storeObj.compute_z_max_error()
 			motors_saturated[j,i]       = storeObj.motors_saturated()
 			hit_ground[j,i]             = storeObj.hit_ground()
+			z_filtering[j,i]            = storeObj.compute_z_filtering()
 
 	## write results to csv
 	out_path = FlightDataHandler.data_directory+'/'+z_results_directory+'/'
@@ -81,3 +83,4 @@ if __name__ == "__main__":
 	np.savetxt(out_path+'z_max_error.csv', z_max_error, delimiter=',')
 	np.savetxt(out_path+'motors_saturated.csv', motors_saturated, delimiter=',')
 	np.savetxt(out_path+'hit_ground.csv', hit_ground, delimiter=',')
+	np.savetxt(out_path+'z_filtering.csv', z_filtering, delimiter=',')
