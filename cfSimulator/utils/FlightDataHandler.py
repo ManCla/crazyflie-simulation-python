@@ -462,6 +462,7 @@ class FlightDataHandler:
         print('* figure 4:\033[33m motor control signals (u1,u2,u3,u4)\033[0m')
 
     def z_loop_frequency_plot(self):
+        self.analyse_z() # needed to get the frequency spectrum
         fig, axs = plt.subplots(2, 1, figsize=chosen_size)
         plt.subplots_adjust(wspace=0.2, hspace=1)
         freq_range_plot = 1
