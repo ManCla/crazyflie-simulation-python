@@ -503,9 +503,17 @@ class FlightDataHandler:
         hit_ground  = 0  # total time spent "hitting the ground" [# of time steps]
         max_error   = 0
 
-        thrust_min = 20000 # TO DO: not so nice that those are hard coded
-        thrust_max = 65535 # possibly they should be defined in __init__()?
-        settle     = 10000  # TO DO settle time should be taken from elsewhere
+        ### PARAMETERS -- TODO should be defined elsewhere
+        dt = 0.001         # sampling time in seconds
+        thrust_min = 20000 # saturation limits of motors
+        thrust_max = 65535 # 
+        settle     = int(10/dt) # 
+        # time in percentage of test trace length above which the drone is considered to have hit the saturations
+        motors_saturated_threshold = 0.001 
+        # deviation from expected gain of 1 that is accepted for good reference tracking
+        filtering_threshold = 0.2
+        avg_error_rel_threshold = 0.5
+        ### END PARAMETERS
 
         if (self.test=="step"):
             # if test was a step skip the "settle time"
@@ -531,9 +539,9 @@ class FlightDataHandler:
             z_pos_detrended = signal.detrend(self.position_z[settle:self.trace_length],type='constant')
             self.z_ref_fft  = list(map(abs, fft.fftshift(fft.fft(z_ref_detrended))))
             self.z_pos_fft  = list(map(abs, fft.fftshift(fft.fft(z_pos_detrended))))
-            self.z_fft_freq = fft.fftshift(fft.fftfreq((self.trace_length-settle), d=0.001))
+            self.z_fft_freq = fft.fftshift(fft.fftfreq((self.trace_length-settle), d=dt))
         # finalize analysis
-        self.z_avg_error            = err_abs_cum/(self.trace_length-settle)
+        self.z_avg_error_abs        = err_abs_cum/(self.trace_length-settle)
         self.z_avg_error_rel        = err_rel/(self.trace_length-settle)
         self.z_max_error            = max_error
         # compute saturation and ground time as percentage of total test time
