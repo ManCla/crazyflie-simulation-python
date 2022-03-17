@@ -9,6 +9,12 @@ import numpy as np
 # set to False to generate paper figures
 remove_intermediate = True
 
+# macros for plotting
+chosen_size = (20, 7)
+chosen_grid_linewidth = 0.3
+chosen_grid_linestyle = '--'
+chosen_grid_color = 'gray'
+
 class FlightDataHandler:
     data_directory = "flightdata"
     date_format    = '%Y%m%d_%H%M%S'
@@ -334,11 +340,6 @@ class FlightDataHandler:
             print('* figure 1:\033[33m 3d position\033[0m')
 
     def positionSpeedPlot(self):
-        # now plot all the others
-        chosen_size = (20, 7)
-        chosen_grid_linewidth = 0.3
-        chosen_grid_linestyle = '--'
-        chosen_grid_color = 'gray'
 
         fig, axs = plt.subplots(3, 2, figsize=chosen_size)
         plt.subplots_adjust(wspace=0.2, hspace=1)
@@ -390,11 +391,6 @@ class FlightDataHandler:
         print('* figure 2:\033[33m position and velocity (x,y,z)\033[0m')
 
     def sensorReadingsPlot(self):
-        # now plot all the others
-        chosen_size = (20, 7)
-        chosen_grid_linewidth = 0.3
-        chosen_grid_linestyle = '--'
-        chosen_grid_color = 'gray'
 
         fig, axs = plt.subplots(3, 2, figsize=chosen_size)
         plt.subplots_adjust(wspace=0.2, hspace=1)
@@ -442,11 +438,6 @@ class FlightDataHandler:
         print('* figure 3:\033[33m sensor data and Kalman errors\033[0m')
 
     def controlActionPlot(self):
-        # now plot all the others
-        chosen_size = (20, 7)
-        chosen_grid_linewidth = 0.3
-        chosen_grid_linestyle = '--'
-        chosen_grid_color = 'gray'
 
         fig, axs = plt.subplots(2, 2, figsize=chosen_size)
         plt.subplots_adjust(wspace=0.2, hspace=1)
