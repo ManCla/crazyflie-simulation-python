@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # ticks and ticks labels
     x_label           = "Frequency"
     x_ticks           = range(len(frequencies))
-    x_ticks_labels    = list(map(str,frequencies))
+    x_ticks_labels    = list(map(lambda x: '%.3f'%(x),frequencies))
     if not(exclude_step_responses): x_ticks_labels[0] = 'step'
     y_label           = "Amplitude"
     y_ticks           = range(len(amplitudes))
