@@ -88,5 +88,13 @@ if __name__ == "__main__":
     plt.setp(ax1, xticks=x_ticks, xticklabels=x_ticks_labels,xlabel=x_label,\
                   yticks=y_ticks, yticklabels=y_ticks_labels,ylabel=y_label)
 
+    ### Scatter Plot ###
+    fig2 = plt.figure()
+    for f in range(len(frequencies)):
+        for a in range(len(amplitudes)):
+            color = [behaviour_plot[a,f]/255]
+            plt.scatter(frequencies[f],amplitudes[a],c=color,s=15)
+    plt.setp(fig2.axes, xticks=frequencies, xticklabels=x_ticks_labels,xlabel=x_label,\
+                        yticks=amplitudes,  yticklabels=y_ticks_labels,ylabel=y_label)
 
     plt.show()
