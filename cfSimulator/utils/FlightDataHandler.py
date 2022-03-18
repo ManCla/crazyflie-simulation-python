@@ -17,7 +17,7 @@ chosen_grid_linewidth = 0.3
 chosen_grid_linestyle = '--'
 chosen_grid_color = 'gray'
 
-# encoding of behaviours
+# encoding of behaviours -- TODO: define as enum (perhaps in separate file to import also in plot script)
 bh_undefined       = 0
 bh_good_tracking   = 1
 bh_filtering       = 2
