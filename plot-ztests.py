@@ -48,17 +48,17 @@ if __name__ == "__main__":
     behaviour_plot = bh_palette[behaviour]
 
     # titles
-    z_avg_error_rel_title  = 'Average Error'
+    z_avg_error_rel_title  = 'Average Normalized Absolute Error'
     motors_saturated_title = 'Percentage of time that motors are saturated'
     z_filtering_title      = 'Gain at highest freq component of input'
     behaviour_plot_title   = 'Gain at highest freq component of input'
 
     # ticks and ticks labels
-    x_label           = "Frequency"
+    x_label           = "Frequency [Hz]"
     x_ticks           = range(len(frequencies))
-    x_ticks_labels    = list(map(lambda x: '%.3f'%(x),frequencies))
+    x_ticks_labels    = list(map(lambda x: '%.2f'%(x/(2*np.pi)),frequencies))
     if not(exclude_step_responses): x_ticks_labels[0] = 'step'
-    y_label           = "Amplitude"
+    y_label           = "Amplitude [m]"
     y_ticks           = range(len(amplitudes))
     y_ticks_labels    = list(map(str,amplitudes))
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     for f in range(len(frequencies)):
         for a in range(len(amplitudes)):
             color = [behaviour_plot[a,f]/255]
-            plt.scatter(frequencies[f],amplitudes[a],c=color,s=15)
+            plt.scatter(frequencies[f],amplitudes[a],c=color,s=25)
     plt.setp(fig2.axes, xticks=frequencies, xticklabels=x_ticks_labels,xlabel=x_label,\
                         yticks=amplitudes,  yticklabels=y_ticks_labels,ylabel=y_label)
 
