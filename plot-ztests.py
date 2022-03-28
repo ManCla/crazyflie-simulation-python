@@ -63,10 +63,12 @@ if __name__ == "__main__":
     y_ticks_labels    = list(map(str,amplitudes))
 
     # generate plotting objects
-    fig1, ax1 = plt.subplots(2, 2)
+    fig1, ax1 = plt.subplots(2, 2) # for heatmaps
+    fig2      = plt.figure()       # for scatter plot
+
+    ### Heatmaps plotting ###
     aspect='0.5' # width height ratio of cells
 
-    ### Actual plotting ###
     ax1[0,0].imshow(z_avg_error_rel,  cmap='jet', interpolation='nearest',origin='lower',aspect=aspect)
     ax1[0,1].imshow(motors_saturated, cmap='jet', interpolation='nearest',origin='lower',aspect=aspect)
     ax1[1,0].imshow(z_filtering,      cmap='jet', interpolation='nearest',origin='lower',aspect=aspect)
@@ -89,11 +91,12 @@ if __name__ == "__main__":
                   yticks=y_ticks, yticklabels=y_ticks_labels,ylabel=y_label)
 
     ### Scatter Plot ###
-    fig2 = plt.figure()
     for f in range(len(frequencies)):
         for a in range(len(amplitudes)):
             color = [behaviour_plot[a,f]/255]
             plt.scatter(frequencies[f],amplitudes[a],c=color,s=25)
+
+    # set axis ticks
     plt.setp(fig2.axes, xticks=frequencies, xticklabels=x_ticks_labels,xlabel=x_label,\
                         yticks=amplitudes,  yticklabels=y_ticks_labels,ylabel=y_label)
 
