@@ -515,13 +515,13 @@ class FlightDataHandler:
         avg_error_rel_threshold = 0.5
         ### END PARAMETERS
 
-        if (self.test=="step"):
-            # if test was a step skip the "settle time"
-            time_range = range(1,self.trace_length-(settle-1))
         if (self.test=="sinus"):
             # if test was a sinus remove the warm up in the first 5 seconds
             time_range = range(settle,self.trace_length)
-
+        else :
+            # otherwise include the whole test
+            time_range = range(1,self.trace_length)
+        
         # iterate over time and perform actual analysis
         for i in time_range:
             abs_error = np.abs(self.setpoint_position_z[i] - self.position_z[i])
