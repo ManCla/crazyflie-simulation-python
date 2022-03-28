@@ -17,7 +17,9 @@ if __name__ == "__main__":
         file_location = sys.argv[2]
         experiment_name = file_location.split('/')[-1]
     else : # otherwise take latest test flight
-        file_list = list(map(lambda x:datetime.strptime(x,fdh.date_format) , os.listdir("flightdata")))
+        dir_content = os.listdir("flightdata")
+        files_only = list(filter(lambda x:os.path.isfile('flightdata/'+x), dir_content))
+        file_list = list(map(lambda x:datetime.strptime(x,fdh.date_format), files_only))
         file_list.sort()
         experiment_name = file_list[-1].strftime(fdh.date_format)
         file_location = fdh.data_directory+"/"+ experiment_name
