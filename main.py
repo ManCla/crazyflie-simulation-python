@@ -1,16 +1,16 @@
 import time
 
 from cfSimulator import cfSimulation
-from testCases.referenceGen import Reference
+from testCases.Shapes import ReferenceShapes
 
 reference = "step" # type of reference sequence
-duration  = 10     # duration of flight
+duration  = 15     # duration of flight
 
 if __name__ == "__main__":
 
 	# initialize simulation objects
 	sim = cfSimulation()
-	ref = Reference(reference)
+	ref = ReferenceShapes(reference)
 
 	# actual test execution
 	start_test = time.perf_counter()

@@ -471,18 +471,15 @@ class FlightDataHandler:
 
     def z_loop_frequency_plot(self):
         self.analyse_z() # needed to get the frequency spectrum
-        fig, axs = plt.subplots(2, 1, figsize=chosen_size)
+        fig, axs = plt.subplots(1, 1, figsize=chosen_size)
         plt.subplots_adjust(wspace=0.2, hspace=1)
-        freq_range_plot = 1
-        axs[0].title.set_text('Frequency spectrum of z reference')
-        axs[0].plot(self.z_fft_freq, self.z_ref_fft, 'k')
-        axs[0].set_xlim([-freq_range_plot, freq_range_plot])
-        axs[0].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
-
-        axs[1].title.set_text('Frequency spectrum of z position')
-        axs[1].plot(self.z_fft_freq, self.z_pos_fft, 'k')
-        axs[1].set_xlim([-freq_range_plot,freq_range_plot])
-        axs[1].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
+        min_freq_plot = 0
+        max_freq_plot = 6
+        axs.title.set_text('Frequency spectrum of z reference and z position')
+        axs.plot(self.z_fft_freq, self.z_ref_fft, 'k')
+        axs.plot(self.z_fft_freq, self.z_pos_fft, 'red')
+        axs.set_xlim([min_freq_plot, max_freq_plot])
+        axs.grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
 
     def show(self):
         # self.trajectoryPlot()
@@ -522,7 +519,7 @@ class FlightDataHandler:
             # otherwise include the whole test
             time_range = range(1,self.trace_length)
         
-        # iterate over time and perform actual analysis
+        # TIME DOM. ANALYSIS: iterate over time and perform actual analysis
         for i in time_range:
             abs_error = np.abs(self.setpoint_position_z[i] - self.position_z[i])
             if abs_error>max_error :
@@ -533,13 +530,20 @@ class FlightDataHandler:
                           (self.control_motor_1[i]<thrust_min+1 or\
                            self.control_motor_1[i]>thrust_max-1)
             hit_ground  = hit_ground + (self.position_z[i]<0.01)
-        # detect filtering
-        if (self.test == "sinus"):
-            z_ref_detrended = signal.detrend(self.setpoint_position_z[settle:self.trace_length],type='constant')
-            z_pos_detrended = signal.detrend(self.position_z[settle:self.trace_length],type='constant')
-            self.z_ref_fft  = list(map(abs, fft.fftshift(fft.fft(z_ref_detrended))))
-            self.z_pos_fft  = list(map(abs, fft.fftshift(fft.fft(z_pos_detrended))))
-            self.z_fft_freq = fft.fftshift(fft.fftfreq((self.trace_length-settle), d=dt))
+        
+        # FREQ. DOM. ANALYSIS
+        # detrend signals (otherwise 0-freq component hides everything)
+        z_ref_detrended = signal.detrend(self.setpoint_position_z[settle:self.trace_length],type='constant')
+        z_pos_detrended = signal.detrend(self.position_z[settle:self.trace_length],type='constant')
+        # fft computation
+        z_ref_fft  = list(map(abs, fft.fft(z_ref_detrended)))
+        z_pos_fft  = list(map(abs, fft.fft(z_pos_detrended)))
+        z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
+        # spectrum is symmetric
+        self.z_ref_fft = z_ref_fft[:len(z_ref_fft)//2]
+        self.z_pos_fft = z_pos_fft[:len(z_pos_fft)//2]
+        self.z_fft_freq = z_fft_freq[:len(z_fft_freq)//2]
+        
         # finalize analysis
         self.z_avg_error_abs        = err_abs_cum/(self.trace_length-settle)
         self.z_avg_error_rel        = err_rel/(self.trace_length-settle)
@@ -547,11 +551,14 @@ class FlightDataHandler:
         # compute saturation and ground time as percentage of total test time
         self.motors_saturated_time  = mot_sat_tot/(self.trace_length-settle)
         self.hit_ground_time        = hit_ground/(self.trace_length-settle)
-        # check for filtering of reference
-        if (self.test == "sinus"):
-            index_input_freq = np.where(self.z_ref_fft== np.amax(self.z_ref_fft))
-            self.z_filtering =  self.z_pos_fft[index_input_freq[0][0]]\
-                               /self.z_ref_fft[index_input_freq[0][0]]
+        # check for filtering of reference's frequency with largest component
+        index_input_freq = np.where(self.z_ref_fft== np.amax(self.z_ref_fft))
+        self.z_filtering =  self.z_pos_fft[index_input_freq[0][0]]\
+                            /self.z_ref_fft[index_input_freq[0][0]]
+
+        # printout
+        print('Saturation percentage: %.2f'%(self.motors_saturated_time))
+
         # define behavioural region on the base of: 
         #  - hitting saturations
         #  - good reference tracking
