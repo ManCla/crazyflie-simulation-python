@@ -3,7 +3,7 @@
 This repository contains a python model of the control layer of the [Crazyflie 2.x quadcopter](https://store.bitcraze.io/products/crazyflie-2-1).
 The considered setup is of autonomous flight with the [Flowdeck V2](https://store.bitcraze.io/collections/decks/products/flow-deck-v2).
 The model includes the physics, the state estimator (the extended kalman filter), and the PID controller implemented in the firmware.
-The implementation of the state estimator and of the controllers is made as adherent as possible with the actual implementation.
+The implementation of the state estimator and of the controllers is made as adherent as possible with the [actual firmware implementation](https://github.com/bitcraze/crazyflie-firmware).
 
 ## Repository Structure
 
@@ -76,4 +76,4 @@ data_storage = fdh()
 data_storage.open(file_location)
 data_storage.trajectoryPlot() 
 data_storage.show() # this will show only the 3D trajectory plot
-``
+```
