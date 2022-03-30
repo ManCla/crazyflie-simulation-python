@@ -482,9 +482,9 @@ class FlightDataHandler:
         axs.grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
 
     def show(self):
-        # self.trajectoryPlot()
+        self.trajectoryPlot()
         self.positionSpeedPlot()
-        # self.sensorReadingsPlot()
+        self.sensorReadingsPlot()
         self.controlActionPlot()
         self.z_loop_frequency_plot()
         plt.show()
@@ -551,13 +551,11 @@ class FlightDataHandler:
         # compute saturation and ground time as percentage of total test time
         self.motors_saturated_time  = mot_sat_tot/(self.trace_length-settle)
         self.hit_ground_time        = hit_ground/(self.trace_length-settle)
-        # check for filtering of reference's frequency with largest component
-        index_input_freq = np.where(self.z_ref_fft== np.amax(self.z_ref_fft))
-        self.z_filtering =  self.z_pos_fft[index_input_freq[0][0]]\
-                            /self.z_ref_fft[index_input_freq[0][0]]
-
-        # printout
-        print('Saturation percentage: %.2f'%(self.motors_saturated_time))
+        if (self.test=="sinus"):
+            # check for filtering of reference's frequency with largest component
+            index_input_freq = np.where(self.z_ref_fft== np.amax(self.z_ref_fft))
+            self.z_filtering =  self.z_pos_fft[index_input_freq[0][0]]\
+                                /self.z_ref_fft[index_input_freq[0][0]]
 
         # define behavioural region on the base of: 
         #  - hitting saturations
