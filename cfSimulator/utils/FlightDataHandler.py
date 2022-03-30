@@ -42,9 +42,8 @@ class FlightDataHandler:
         with open(self.data_directory+"/"+filename, "wb") as f:
             pk.dump(self, f, protocol=pk.HIGHEST_PROTOCOL)
 
-    def open(self, data_location, experiment_name, silent=False):
+    def open(self, data_location, silent=False):
         self.data_location = data_location
-        self.experiment_name = str(experiment_name)
 
         with open(self.data_location, 'rb') as f:
             data = pk.load(f)
