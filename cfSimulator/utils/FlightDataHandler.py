@@ -397,12 +397,19 @@ class FlightDataHandler:
         
         # FREQ. DOM. ANALYSIS
         # detrend signals (otherwise 0-freq component hides everything)
-        z_ref_detrended = signal.detrend(self.setpoint_position_z[settle:self.trace_length],type='constant')
-        z_pos_detrended = signal.detrend(self.position_z[settle:self.trace_length],type='constant')
+        if (self.test=="sinus"):
+            # if test is a sinus test remove warm up
+            z_ref_detrended = signal.detrend(self.setpoint_position_z[settle:self.trace_length],type='constant')
+            z_pos_detrended = signal.detrend(self.position_z[settle:self.trace_length],type='constant')
+            z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
+        else :
+            # otherwise use the whole trace
+            z_ref_detrended = signal.detrend(self.setpoint_position_z,type='constant')
+            z_pos_detrended = signal.detrend(self.position_z,type='constant')
+            z_fft_freq = fft.fftfreq((self.trace_length), d=dt)
         # fft computation
         z_ref_fft  = list(map(abs, fft.fft(z_ref_detrended)))
         z_pos_fft  = list(map(abs, fft.fft(z_pos_detrended)))
-        z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
         # spectrum is symmetric
         self.z_ref_fft = z_ref_fft[:len(z_ref_fft)//2]
         self.z_pos_fft = z_pos_fft[:len(z_pos_fft)//2]
