@@ -23,11 +23,14 @@ python plot.py
 
 ### Running a Test Flight
 
-To run a test flight it is sufficient to create a `cfSimulation` object (from the simulator) and call its `run()` method.
-The run method takes as input the duration of the test flight and a reference to a reference generator object.
+To run a test flight it is sufficient to create a `cfSimulation` object and call its `run()` method.
+The run method takes as input the duration of the test flight and a reference generator object.
 A minimal example is: 
 
 ```
+from cfSimulator import cfSimulation
+from testCases.referenceGen import Reference
+
 duration = 10
 trajecoryType = "step"  # step sequence reference
 sim = cfSimulation()
@@ -36,12 +39,12 @@ storeObj = sim.run(ref, duration)
 storeObj.save()
 ```
 
-The `duration` input is an integer representing the duration in seconds of the test.
+**INPUTS**: The `duration` input is an integer representing the duration in seconds of the test.
 A valid reference generator object is any object with a `refGen()` method and a `trajectoryType` field.
 `refGen()` should take as input the current time and return a 3 dimensional array containing the position reference in the three Cartesian axes.
 `trajectoryType` is a string stored also in the output flight data returned by the simulation.
 
-The call to `run()` returns a `FlightDataHandler` object that can be saved to file by calling its method `save()`.
+**OUTPUT**: The call to `run()` returns a `FlightDataHandler` object (defined in _cfSimulator/utils/FlightDataHandler.py_) that can be saved to file by calling its method `save()`.
 If `save()` is called without arguments it will store the data in a file named by the current date and time in the _flightdata_ directory.
 If a string is passed to `save("file_name")` the flight data will be stored in a file named _file_name_ in the _flightdata_ directory.
 
@@ -50,6 +53,8 @@ If a string is passed to `save("file_name")` the flight data will be stored in a
 The `FlightDataHandler` class can be used to open the files containing the test results and it provides some methods to analyse the results and plot the data.
 A minimal example to show all the plots available is:
 ```
+from cfSimulator.utils.FlightDataHandler import FlightDataHandler as fdh
+
 data_storage = fdh()
 data_storage.open(file_location)
 data_storage.show_all()
@@ -71,4 +76,4 @@ data_storage = fdh()
 data_storage.open(file_location)
 data_storage.trajectoryPlot() 
 data_storage.show() # this will show only the 3D trajectory plot
-```
+``
