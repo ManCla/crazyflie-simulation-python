@@ -336,6 +336,7 @@ class FlightDataHandler:
         axs.plot(self.z_fft_freq, self.z_pos_fft, 'red')
         axs.set_xlim([min_freq_plot, max_freq_plot])
         axs.grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
+        print('* figure 5:\033[33m frequency spectrum of z reference and position\033[0m')
 
     def show(self):
         self.trajectoryPlot()
