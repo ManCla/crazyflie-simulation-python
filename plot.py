@@ -20,4 +20,4 @@ if __name__ == "__main__":
     data_storage.open(file_location, experiment_name)
     print('* read data with length: \033[33m' + str(data_storage.trace_length) + '\033[0m')
 
-    data_storage.show()
+    data_storage.show_all()

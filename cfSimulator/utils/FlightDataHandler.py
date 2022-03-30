@@ -338,12 +338,19 @@ class FlightDataHandler:
         axs.grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
         print('* figure 5:\033[33m frequency spectrum of z reference and position\033[0m')
 
-    def show(self):
+    ### function to generate and show all plots available
+    def show_all(self):
         self.trajectoryPlot()
         self.positionSpeedPlot()
         self.sensorReadingsPlot()
         self.controlActionPlot()
         self.z_loop_frequency_plot()
+        plt.show()
+
+    ### function to show only the already generated selected plots
+    # note that caller should first generate the desired plots
+    # with the dedicated functions
+    def show(self):
         plt.show()
 
     ##########################
