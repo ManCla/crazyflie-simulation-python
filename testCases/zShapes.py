@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class ReferenceShapes():
+class zReferenceShapes():
     
     def __init__(self, refType):
         # reference trajectory desired type
