@@ -120,9 +120,9 @@ class FlightDataHandler:
         self.control_motor_3 = data.u[2, :]
         self.control_motor_4 = data.u[3, :]
 
-    ################################
-    ### PDF GENERATION FUNCTIONS ###
-    ################################
+    ###############################
+    ### CSV GENERATION FUNCTION ###
+    ###############################
 
     def save_csv(self, csv_location):
 
@@ -181,150 +181,6 @@ class FlightDataHandler:
                                          str(self.control_motor_3[i]) + ", " + \
                                          str(self.control_motor_4[i]) + "\n"
                 f.write(ith_string)
-
-    def save_latex(self, latex_location, csv_location):
-        with open(latex_location, 'w') as f:
-            f.write(r'\documentclass{article}' + '\n')
-            f.write(r'\usepackage[margin=2cm]{geometry}' + '\n')
-            f.write(r'\usepackage{tikz, pgfplots}' + '\n')
-            f.write(r'\usepgfplotslibrary{groupplots}' + '\n')
-            f.write(r'\pgfplotsset{compat=1.17}' + '\n')
-            f.write(r'\pagestyle{empty}' + '\n')
-            f.write(r'\begin{document}' + '\n')
-            f.write(r'\centering' + '\n')
-            f.write(r'{\Large\verb|' + self.experiment_name + r'|}' + '\n')
-            f.write(r'\resizebox{0.9\textwidth}{!}{%' + '\n')
-            f.write(r'\begin{tikzpicture}[font=\small]' + '\n')
-            f.write(r'\begin{groupplot}[%' + '\n')
-            f.write(r'group style={group size = 2 by 8, vertical sep = 1cm, horizontal sep = 1cm},' + '\n')
-            f.write(r'width = 10cm, height = 4cm,' + '\n')
-            f.write(r'enlarge x limits = false,' + '\n')
-            f.write(r'legend pos = south east,' + '\n')
-            f.write(r'title style={yshift=-1.5ex},' + '\n')
-            f.write(r'grid style={densely dotted, black!50},' + '\n')
-            f.write(r'grid = major]' + '\n')
-            f.write(r'\nextgroupplot[title = {Position $x$}, legend pos = north east]' + '\n')
-            f.write(r'\addplot[ultra thick, black] table[col sep=comma, x index=1, y index=8] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Setpoint $x$}' + '\n')
-            if not(self.type=='pitl'):
-                f.write(r'\addplot[ultra thick, blue] table[col sep=comma, x index=1, y index=2] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{Position $x$}' + '\n')
-            f.write(r'\addplot[ultra thick, blue, densely dotted] table[col sep=comma, x index=1, y index=5] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Estimated $x$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Velocity $x$}]' + '\n')
-            if not(self.type=='pitl'):
-                f.write(r'\addplot[ultra thick, blue] table[col sep=comma, x index=1, y index=11] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{Velocity $x$}' + '\n')
-            f.write(r'\addplot[ultra thick, blue, densely dotted] table[col sep=comma, x index=1, y index=14] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Estimated velocity $x$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Position $y$}]' + '\n')
-            f.write(r'\addplot[ultra thick, black] table[col sep=comma, x index=1, y index=9] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Setpoint $y$}' + '\n')
-            if not(self.type=='pitl'):
-                f.write(r'\addplot[ultra thick, green!60!black] table[col sep=comma, x index=1, y index=3] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{Position $y$}' + '\n')
-            f.write(r'\addplot[ultra thick, green!60!black, densely dotted] table[col sep=comma, x index=1, y index=6] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Estimated $y$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Velocity $y$}, legend pos = north east]' + '\n')
-            if not(self.type=='pitl'):
-                f.write(r'\addplot[ultra thick, green!60!black] table[col sep=comma, x index=1, y index=12] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{Velocity $y$}' + '\n')
-            f.write(r'\addplot[ultra thick, green!60!black, densely dotted] table[col sep=comma, x index=1, y index=15] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Estimated velocity $y$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Position $z$}]' + '\n')
-            f.write(r'\addplot[ultra thick, black] table[col sep=comma, x index=1, y index=10] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Setpoint $z$}' + '\n')
-            if not(self.type=='pitl'):
-                f.write(r'\addplot[ultra thick, red!80!black] table[col sep=comma, x index=1, y index=4] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{Position $z$}' + '\n')
-            f.write(r'\addplot[ultra thick, red!80!black, densely dotted] table[col sep=comma, x index=1, y index=7] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Estimated $z$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Velocity $z$}, legend pos = north east]' + '\n')
-            f.write(r'\addplot[ultra thick, red!80!black] table[col sep=comma, x index=1, y index=13] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Velocity $z$}' + '\n')
-            f.write(r'\addplot[ultra thick, red!80!black, densely dotted] table[col sep=comma, x index=1, y index=16] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{Estimated velocity $z$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Acceleration $x, y, z$}, legend columns = 3, legend pos = north east]' + '\n')
-            f.write(r'\addplot[ultra thick, blue] table[col sep=comma, x index=1, y index=17] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$x$}' + '\n')
-            f.write(r'\addplot[ultra thick, green!60!black] table[col sep=comma, x index=1, y index=18] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$y$}' + '\n')
-            f.write(r'\addplot[ultra thick, red!80!black] table[col sep=comma, x index=1, y index=19] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$z$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Attitude $x, y, z$}, legend columns = 3, legend pos = north east]' + '\n')
-            if not(self.type=='pitl'):
-                f.write(r'\addplot[ultra thick, blue] table[col sep=comma, x index=1, y index=20] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{$x$}' + '\n')
-                f.write(r'\addplot[ultra thick, green!60!black] table[col sep=comma, x index=1, y index=21] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{$y$}' + '\n')
-                f.write(r'\addplot[ultra thick, red!80!black] table[col sep=comma, x index=1, y index=22] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{$z$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Gyro $x, y, z$}, legend columns = 3, legend pos = north east]' + '\n')
-            f.write(r'\addplot[ultra thick, blue] table[col sep=comma, x index=1, y index=23] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$x$}' + '\n')
-            f.write(r'\addplot[ultra thick, green!60!black] table[col sep=comma, x index=1, y index=24] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$y$}' + '\n')
-            f.write(r'\addplot[ultra thick, red!80!black] table[col sep=comma, x index=1, y index=25] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$z$}' + '\n')
-            f.write(r'\nextgroupplot[title = {$z$-range}]' + '\n')
-            f.write(r'\addplot[ultra thick, red!80!black] table[col sep=comma, x index=1, y index=30] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$z$-range}' + '\n')
-            f.write(r'\nextgroupplot[title = {Pixel count $x,y$}, legend pos = north east, legend columns = 2]' + '\n')
-            f.write(r'\addplot[ultra thick, blue] table[col sep=comma, x index=1, y index=26] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$x$}' + '\n')
-            f.write(r'\addplot[ultra thick, green!60!black] table[col sep=comma, x index=1, y index=28] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$y$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Kalman errors $x,y,z$}, legend columns = 3, legend pos = north east]' + '\n')
-            if not(self.type=='pitl'):
-                f.write(r'\addplot[ultra thick, blue, densely dotted] table[col sep=comma, x index=1, y index=27] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{$x$}' + '\n')
-                f.write(r'\addplot[ultra thick, green!60!black, densely dotted] table[col sep=comma, x index=1, y index=29] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{$y$}' + '\n')
-                f.write(r'\addplot[ultra thick, red!80!black] table[col sep=comma, x index=1, y index=31] {' + csv_location + r'};' + '\n')
-                f.write(r'\addlegendentry{$z$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Motors control signals $u_1$}]' + '\n')
-            f.write(r'\addplot[ultra thick, black] table[col sep=comma, x index=1, y index=32] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$u_1$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Motors control signals $u_2$}]' + '\n')
-            f.write(r'\addplot[ultra thick, black!80] table[col sep=comma, x index=1, y index=33] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$u_2$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Motors control signals $u_3$}]' + '\n')
-            f.write(r'\addplot[ultra thick, black!60] table[col sep=comma, x index=1, y index=34] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$u_3$}' + '\n')
-            f.write(r'\nextgroupplot[title = {Motors control signals $u_4$}]' + '\n')
-            f.write(r'\addplot[ultra thick, black!40] table[col sep=comma, x index=1, y index=35] {' + csv_location + r'};' + '\n')
-            f.write(r'\addlegendentry{$u_4$}' + '\n')
-            f.write(r'\end{groupplot}' + '\n')
-            f.write(r'\end{tikzpicture}' + '\n')
-            f.write(r'}' + '\n')
-            f.write(r'\end{document}' + '\n')
-
-    def pdf(self, experiment_name):
-        # first save the data to an intermediate csv file
-        intermediate_data_file = "data.csv"
-        intermediate_latex_file = experiment_name + ".tex"
-        self.save_csv(intermediate_data_file)
-        print('* saved data to intermediate file: \033[33m' + str(intermediate_data_file) + '\033[0m')
-
-        # now do the plotting
-        self.save_latex(intermediate_latex_file, intermediate_data_file)
-        print('* saved tex to intermediate file: \033[33m' + str(intermediate_latex_file) + '\033[0m')
-
-        # you want to use lualatex because there could be a lot of data
-        os.system("lualatex " + intermediate_latex_file + " &>/dev/null")
-        print('* compiled latex plot: \033[33m' + str(experiment_name) + '.pdf\033[0m')
-
-        # then remove intermediate files
-        if remove_intermediate:
-            try:
-                os.remove(intermediate_data_file)
-                print('* removed intermediate file: \033[33m' + str(intermediate_data_file) + '\033[0m')
-                os.remove(intermediate_latex_file)
-                os.remove(experiment_name + ".aux")
-                os.remove(experiment_name + ".log")
-                print('* removed intermediate file: \033[33m' + str(intermediate_latex_file) + '\033[0m + .aux .log')
-            except OSError:
-                pass
 
     ##########################
     ### PLOTTING FUNCTIONS ###
