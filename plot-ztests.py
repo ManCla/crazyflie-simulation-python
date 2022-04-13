@@ -51,12 +51,12 @@ if __name__ == "__main__":
     z_avg_error_rel_title  = 'Average Normalized Absolute Error'
     motors_saturated_title = 'Percentage of time that motors are saturated'
     z_filtering_title      = 'Gain at highest freq component of input'
-    behaviour_plot_title   = 'Gain at highest freq component of input'
+    behaviour_plot_title   = 'Behaviour regions'
 
     # ticks and ticks labels
     x_label           = "Frequency [Hz]"
     x_ticks           = range(len(frequencies))
-    x_ticks_labels    = list(map(lambda x: '%.2f'%(x/(2*np.pi)),frequencies))
+    x_ticks_labels    = list(map(lambda x: '.%d'%((x/(2*np.pi))*100),frequencies))
     if not(exclude_step_responses): x_ticks_labels[0] = 'step'
     y_label           = "Amplitude [m]"
     y_ticks           = range(len(amplitudes))
@@ -77,8 +77,8 @@ if __name__ == "__main__":
     for i in range(len(frequencies)):
         for j in range(len(amplitudes)):
             ax1[0,0].text(i,j,'%.1f'%(z_avg_error_rel[j,i]),ha='center',va='center')
-            ax1[0,1].text(i,j,'%.2f'%(motors_saturated[j,i]),ha='center',va='center')
-            ax1[1,0].text(i,j,'%.2f'%(z_filtering[j,i]),ha='center',va='center')
+            ax1[0,1].text(i,j,'%d'%(int(motors_saturated[j,i]*100)),ha='center',va='center')
+            ax1[1,0].text(i,j,'%.1f'%(z_filtering[j,i]),ha='center',va='center')
 
     # set titles
     ax1[0,0].set_title(z_avg_error_rel_title)
