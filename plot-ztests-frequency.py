@@ -55,9 +55,11 @@ if __name__ == "__main__":
 
     min_freq_plot = 0
     max_freq_plot = 1.5
+    min_amp_plot  = 0
+    max_amp_plot  = 150000
 
     # generate plotting objects
-    fig1, ax = plt.subplots(2, 2)
+    fig1, ax = plt.subplots(2, 1)
     plt.subplots_adjust(wspace=0.2, hspace=1)
 
     ### Plot ###
@@ -68,7 +70,6 @@ if __name__ == "__main__":
                     z_test_directory+'/'+\
                     file
         data_storage = fdh()
-        print(file)
         data_storage.open(file_path, silent=True)
         data_storage.analyse_z() # needed to get the frequency spectrum
 
@@ -79,23 +80,20 @@ if __name__ == "__main__":
         bh_sat_no_tracking = 4
         bh_something_wrong = 5
         if data_storage.behaviour==bh_good_tracking:
-            ax[0,0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'green')
-            ax[0,0].set_xlim([min_freq_plot, max_freq_plot])
-            ax[0,0].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
+            ax[0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'green')
+            ax[0].set_xlim([min_freq_plot, max_freq_plot])
+            ax[0].set_ylim([min_amp_plot, max_amp_plot])
         if data_storage.behaviour==bh_filtering:
-            ax[0,1].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'blue')
-            ax[0,1].set_xlim([min_freq_plot, max_freq_plot])
-            ax[0,1].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
+            ax[0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'blue')
+            ax[0].set_xlim([min_freq_plot, max_freq_plot])
+            ax[0].set_ylim([min_amp_plot, max_amp_plot])
         if data_storage.behaviour==bh_good_tracking_extra:
-            ax[1,0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'cyan')
-            ax[1,0].set_xlim([min_freq_plot, max_freq_plot])
-            ax[1,0].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
-        if data_storage.behaviour==bh_sat_no_tracking:
-            ax[1,1].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'red')
-            ax[1,1].set_xlim([min_freq_plot, max_freq_plot])
-            ax[1,1].grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
-
-    # set axis ticks
-    # plt.setp(fig1.axes, xticks=frequencies, yticks=amplitudes)
+            ax[0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'cyan')
+            ax[0].set_xlim([min_freq_plot, max_freq_plot])
+            ax[0].set_ylim([min_amp_plot, max_amp_plot])
+        if data_storage.behaviour==bh_sat_no_tracking and max(data_storage.z_ref_fft)<85000:
+            ax[1].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'red')
+            ax[1].set_xlim([min_freq_plot, max_freq_plot])
+            ax[1].set_ylim([min_amp_plot, max_amp_plot])
 
     plt.show()
