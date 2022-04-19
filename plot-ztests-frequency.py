@@ -80,19 +80,19 @@ if __name__ == "__main__":
         bh_sat_no_tracking = 4
         bh_something_wrong = 5
         if data_storage.behaviour==bh_good_tracking:
-            ax[0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'green')
+            ax[0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'green', linewidth=1)
             ax[0].set_xlim([min_freq_plot, max_freq_plot])
             ax[0].set_ylim([min_amp_plot, max_amp_plot])
         if data_storage.behaviour==bh_filtering:
-            ax[0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'blue')
+            ax[0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'blue', linewidth=1)
             ax[0].set_xlim([min_freq_plot, max_freq_plot])
             ax[0].set_ylim([min_amp_plot, max_amp_plot])
         if data_storage.behaviour==bh_good_tracking_extra:
-            ax[0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'cyan')
+            ax[0].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'cyan', linewidth=1)
             ax[0].set_xlim([min_freq_plot, max_freq_plot])
             ax[0].set_ylim([min_amp_plot, max_amp_plot])
-        if data_storage.behaviour==bh_sat_no_tracking and max(data_storage.z_ref_fft)<85000:
-            ax[1].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'red')
+        if data_storage.behaviour==bh_sat_no_tracking :#and max(data_storage.z_ref_fft)<85000:
+            ax[1].plot(data_storage.z_fft_freq, data_storage.z_ref_fft, 'red', linewidth=1)
             ax[1].set_xlim([min_freq_plot, max_freq_plot])
             ax[1].set_ylim([min_amp_plot, max_amp_plot])
 
