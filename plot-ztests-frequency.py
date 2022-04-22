@@ -36,6 +36,7 @@ if __name__ == "__main__":
     fig1, ax = plt.subplots(1, 1)
     plt.subplots_adjust(wspace=0.2, hspace=1)
     plt.setp(ax,xlabel=x_label,ylabel=y_label)
+    ax.grid(color=chosen_grid_color, linestyle=chosen_grid_linestyle, linewidth=chosen_grid_linewidth)
 
     ##########################################
     ### Iterate over Test Results and Plot ###
