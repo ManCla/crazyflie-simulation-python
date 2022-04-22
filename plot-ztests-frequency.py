@@ -43,6 +43,8 @@ if __name__ == "__main__":
 
     directory = fdh.data_directory+'/'+z_test_directory
     dir_content = os.listdir(directory)
+    # filter out directories and look only at files
+    dir_content = list(filter(lambda x:os.path.isfile(directory+x), dir_content))
     
     for file in dir_content:
         # file opening and data extraction
