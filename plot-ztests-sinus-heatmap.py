@@ -2,7 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cfSimulator.utils.FlightDataHandler import FlightDataHandler as fdh
 
-path = fdh.data_directory+'/z-aggregated-sinus/'
+# path to directory with aggregated heatmap data
+z_results_directory = 'z-aggregated-sinus'
+path = fdh.data_directory+z_results_directory
 
 if __name__ == "__main__":
 

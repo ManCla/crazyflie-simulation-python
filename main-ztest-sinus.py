@@ -11,7 +11,9 @@ from testCases.zTestsSinus import zTestCaseSinus
 import matplotlib.pyplot as plt
 import numpy as np
 
+# name of directory with sinus tests data
 z_test_directory    = 'z-test-sinus'
+# name of directory with aggregated heatmap data
 z_results_directory = 'z-aggregated-sinus'
 
 duration  = 50     # duration of flight
