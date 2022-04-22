@@ -4,9 +4,11 @@ import numpy as np
 from cfSimulator.utils.FlightDataHandler import FlightDataHandler as fdh
 import scipy.signal as ss
 
+# directory inside the FlightDataHandler.data_directory directory
+# where to take the data for the analysis
 z_test_directory    = 'z-test'
 
-exclude_step_responses = True
+# script parameters
 plot_only_peaks = True
 
 chosen_grid_linewidth = 0.3
