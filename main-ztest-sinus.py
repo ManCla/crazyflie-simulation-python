@@ -5,14 +5,14 @@ import code
 # for simulation
 from cfSimulator import cfSimulation
 from cfSimulator import FlightDataHandler
-from testCases.zControlTests import zTestCase
+from testCases.zTestsSinus import zTestCaseSinus
 
 # for plotting
 import matplotlib.pyplot as plt
 import numpy as np
 
-z_test_directory    = 'z-test'
-z_results_directory = 'z-aggregated'
+z_test_directory    = 'z-test-sinus'
+z_results_directory = 'z-aggregated-sinus'
 
 duration  = 50     # duration of flight
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 			else :
 				base = amp+1
 			if i<=9 or j<=7:
-				ref = zTestCase(base, amp, freq)
+				ref = zTestCaseSinus(base, amp, freq)
 
 				# retrieve location and name of test output file
 				file_name = ref.trajectoryType+'-'+\

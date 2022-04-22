@@ -1,9 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-path = 'flightdata/z-aggregated/'
-
-exclude_step_responses = True
+path = 'flightdata/z-aggregated-sinus/'
 
 if __name__ == "__main__":
 
@@ -20,19 +18,6 @@ if __name__ == "__main__":
     hit_ground       = np.genfromtxt(path+'hit_ground.csv', delimiter=',')
     z_filtering      = np.genfromtxt(path+'z_filtering.csv', delimiter=',')
     behaviour        = np.genfromtxt(path+'behaviour.csv', delimiter=',',dtype=np.int16)
-
-    # if we are not interested in the step responses, remove them
-    # the ones with freq=0 (first element of frequencies vector)
-    if exclude_step_responses:
-        num_freqs = len(frequencies)
-        frequencies = frequencies[1:num_freqs]
-        z_avg_error_abs = z_avg_error_abs[:,1:num_freqs]
-        z_avg_error_rel = z_avg_error_rel[:,1:num_freqs]
-        z_max_error = z_max_error[:,1:num_freqs]
-        motors_saturated = motors_saturated[:,1:num_freqs]
-        hit_ground = hit_ground[:,1:num_freqs]
-        z_filtering = z_filtering[:,1:num_freqs]
-        behaviour = behaviour[:,1:num_freqs]
 
     ################
     ### plotting ###
@@ -57,7 +42,6 @@ if __name__ == "__main__":
     x_label           = "Frequency [Hz]"
     x_ticks           = range(len(frequencies))
     x_ticks_labels    = list(map(lambda x: '.%d'%((x/(2*np.pi))*100),frequencies))
-    if not(exclude_step_responses): x_ticks_labels[0] = 'step'
     y_label           = "Amplitude [m]"
     y_ticks           = range(len(amplitudes))
     y_ticks_labels    = list(map(str,amplitudes))

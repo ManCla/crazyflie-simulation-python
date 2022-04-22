@@ -8,7 +8,7 @@ this class implements a test case of the Z controller on the base of
  * a frequency parameter
  * a base offset parameter
 '''
-class zTestCase():
+class zTestCaseSinus():
     
     def __init__(self, base=0.5, amplitude=0.2, omega=2):
         # reference trajectory desired type
@@ -28,6 +28,3 @@ class zTestCase():
                 z = self.amplitude*np.sin(self.omega*(t-settle))+self.base
             else : 
                 z = self.base
-        elif (self.trajectoryType == "ramp") :
-            z = self.amplitude*t+self.base
-        return np.array([0,0,z])
