@@ -10,12 +10,6 @@ class zReferenceShapes():
     def refGen(self, t):
         
         if   (self.trajectoryType == "step")   :return self.step(t)
-        elif (self.trajectoryType == "zsinus") :return self.zsinus()
-        elif (self.trajectoryType == "zramp")  :return self.zramp()
-        elif (self.trajectoryType == "xsinus") :return self.xsinus()
-        elif (self.trajectoryType == "ysinus") :return self.ysinus()
-        elif (self.trajectoryType == "circle") :return self.circle()
-        elif (self.trajectoryType == "spiral") :return self.spiral()
 
     def step(self, t):
         if t<4:
