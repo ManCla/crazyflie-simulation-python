@@ -2,6 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cfSimulator.utils.FlightDataHandler import FlightDataHandler as fdh
 
+'''
+Script that plots tests results in the form of heatmaps
+from sinusoidal tests performed for different frequencies
+and amplitudes. The data are taken from matrices in csv 
+files in a given directory.
+'''
+
 # path to directory with aggregated heatmap data
 z_results_directory = 'z-aggregated-sinus'
 path = fdh.data_directory+z_results_directory

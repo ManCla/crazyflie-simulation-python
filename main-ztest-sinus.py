@@ -11,6 +11,12 @@ from testCases.zTestsSinus import zTestCaseSinus
 import matplotlib.pyplot as plt
 import numpy as np
 
+'''
+Script to perform tests with purely sinusoidal inputs.
+The script performs tests for each amplitude with each frequency
+and stores them as a matrices in csv files in a results directory.
+'''
+
 # name of directory with sinus tests data
 z_test_directory    = 'z-test-sinus'
 # name of directory with aggregated heatmap data
