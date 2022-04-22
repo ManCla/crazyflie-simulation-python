@@ -1,15 +1,11 @@
-import time
-from os.path import exists
-import code
+import time # for measurement of tests durations
+from os.path import exists # to check if test has already been performed
+import numpy as np
 
 # for simulation
 from cfSimulator import cfSimulation
 from cfSimulator import FlightDataHandler as fdh
 from testCases.zTestsSinus import zTestCaseSinus
-
-# for plotting
-import matplotlib.pyplot as plt
-import numpy as np
 
 '''
 Script to perform tests with purely sinusoidal inputs.
@@ -22,7 +18,7 @@ z_test_directory    = 'z-test-sinus'
 # name of directory with aggregated heatmap data
 z_results_directory = 'z-aggregated-sinus'
 
-duration  = 50     # duration of flight
+duration  = 50 # duration of flight
 
 frequencies = [ .25, .5, .75, .875, 1, 1.125, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.5, 4, 4.5]
 amplitudes  = [.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6,\
@@ -30,6 +26,7 @@ amplitudes  = [.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6,\
 
 if __name__ == "__main__":
 
+	# initialize store variables
 	z_avg_error      = np.zeros((len(amplitudes),len(frequencies)))
 	z_avg_error_rel  = np.zeros((len(amplitudes),len(frequencies)))
 	z_max_error      = np.zeros((len(amplitudes),len(frequencies)))
@@ -48,7 +45,7 @@ if __name__ == "__main__":
 				base = amp
 			else :
 				base = amp+1
-			if i<=9 or j<=7:
+			if i<=9 or j<=7: # skip tests that are known to fail. This is just a time-saving thing.
 				ref = zTestCaseSinus(base, amp, freq)
 
 				# retrieve location and name of test output file
@@ -60,8 +57,8 @@ if __name__ == "__main__":
 				            z_test_directory+'/'+\
 				            file_name
 
-				# If test has not been executed, do it otherwise, print performance
 				if not(exists(file_path)):
+					# If test has not been executed, run it
 					print(" * Executing Test {}".format(file_name))
 					sim        = cfSimulation()          # initialize simulation object
 					start_test = time.perf_counter()
@@ -71,10 +68,12 @@ if __name__ == "__main__":
 					storeObj.save(z_test_directory+'/'+file_name) # store simulation results
 					storeObj.unwrap(storeObj)
 				else :
+					# If test has been executed open the results file
 					print(" * Test {} already executed".format(file_name))
 					storeObj = fdh()
 					storeObj.open(file_path,True)
-					# show flight performance
+
+				# store test results (independently if test was already executed or not)
 				z_avg_error[j,i]      = storeObj.compute_z_avg_error_abs()
 				z_avg_error_rel[j,i]  = storeObj.compute_z_avg_error_rel()
 				z_max_error[j,i]      = storeObj.compute_z_max_error()
