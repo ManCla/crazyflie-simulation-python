@@ -6,11 +6,6 @@ import numpy as np
 import scipy.fft as fft
 import scipy.signal as signal
 
-# global variable: configuration
-# should I remove intermediate files or not
-# set to False to generate paper figures
-remove_intermediate = True
-
 # macros for plotting
 chosen_size = (20, 7)
 chosen_grid_linewidth = 0.3
