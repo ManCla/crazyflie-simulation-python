@@ -4,7 +4,6 @@ import numpy as np
 from cfSimulator.utils.FlightDataHandler import FlightDataHandler as fdh
 import scipy.signal as ss
 
-path = 'flightdata/z-aggregated/'
 z_test_directory    = 'z-test'
 
 exclude_step_responses = True
