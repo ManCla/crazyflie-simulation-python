@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from cfSimulator.utils.FlightDataHandler import FlightDataHandler as fdh
 
-path = 'flightdata/z-aggregated-sinus/'
+path = fdh.data_directory+'/z-aggregated-sinus/'
 
 if __name__ == "__main__":
 
@@ -24,13 +25,7 @@ if __name__ == "__main__":
     ################
 
     # colour palette for behaviour coding
-    bh_palette = np.array([[255,255,255],  # black: bh_undefined
-                           [  0,255,  0],  # green: bh_good_tracking
-                           [  0,  0,255],  # blue : bh_filtering
-                           [  0,255,255],  # azure: bh_good_tracking_extra
-                           [255,  0,  0],  # red  : bh_sat_no_tracking
-                           [  0,  0,  0]]) # dark : bh_something_wrong
-    behaviour_plot = bh_palette[behaviour]
+    behaviour_plot = fdh.bh_palette[behaviour]
 
     # titles
     z_avg_error_rel_title  = 'Average Normalized Absolute Error'
