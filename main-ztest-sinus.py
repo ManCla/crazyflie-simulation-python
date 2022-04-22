@@ -4,7 +4,7 @@ import code
 
 # for simulation
 from cfSimulator import cfSimulation
-from cfSimulator import FlightDataHandler
+from cfSimulator import FlightDataHandler as fdh
 from testCases.zTestsSinus import zTestCaseSinus
 
 # for plotting
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 				            str(ref.base)+'-'+\
 				            str(ref.amplitude)+'-'+\
 				            str(ref.omega)
-				file_path = FlightDataHandler.data_directory+'/'+\
+				file_path = fdh.data_directory+'/'+\
 				            z_test_directory+'/'+\
 				            file_name
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 					storeObj.unwrap(storeObj)
 				else :
 					print(" * Test {} already executed".format(file_name))
-					storeObj = FlightDataHandler()
+					storeObj = fdh()
 					storeObj.open(file_path,True)
 					# show flight performance
 				z_avg_error[j,i]      = storeObj.compute_z_avg_error_abs()
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 				behaviour[j,i]        = storeObj.compute_behaviour()
 
 	## write results to csv
-	out_path = FlightDataHandler.data_directory+'/'+z_results_directory+'/'
+	out_path = fdh.data_directory+'/'+z_results_directory+'/'
 	# frequencies and amplitudes vectors
 	np.savetxt(out_path+'frequencies.csv', frequencies, delimiter=',')
 	np.savetxt(out_path+'amplitudes.csv', amplitudes, delimiter=',')
