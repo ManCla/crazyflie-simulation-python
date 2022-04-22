@@ -1,1 +1,4 @@
+# directory containing data from test flights
 flightdata/*
+# directory contining some saved plots
+images/*
