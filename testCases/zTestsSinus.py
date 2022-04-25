@@ -28,3 +28,4 @@ class zTestCaseSinus():
                 z = self.amplitude*np.sin(self.omega*(t-settle))+self.base
             else : 
                 z = self.base
+            return np.array([0,0,z])
