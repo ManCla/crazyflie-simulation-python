@@ -6,7 +6,7 @@ import scipy.signal as ss
 
 # directory inside the FlightDataHandler.data_directory directory
 # where to take the data for the analysis
-z_test_directory    = 'z-test'
+z_test_directory    = 'z-test-set'
 
 # script parameters
 plot_only_peaks = True
