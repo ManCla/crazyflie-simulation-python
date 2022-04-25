@@ -5,7 +5,7 @@ Class that generates general test cases according to...
 TODO: write class description
 '''
 
-class zReferenceShapes():
+class zShapes():
     
     # list of available shapes
     shapes = ['trapezoidal', 'steps', 'triangular']
