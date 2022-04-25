@@ -21,6 +21,7 @@ class zShapes():
             print('Shape element must be present in zShapes.shapes')
             exit()
         self.shape = shape
+        self.trajectoryType = shape # needed so we can store in test result object
         self.amplitude = amplitude
         self.time = time
         self.offset = offset
@@ -33,7 +34,7 @@ class zShapes():
         # the same for the different shapes (amp,time scaling and offsets)
 
         if t<self.settle : # implement warm up
-            return self.offset
+            return np.array([0,0,self.offset])
 
         t_scaled = self.time*(t-self.settle)    # scale time
 
@@ -45,7 +46,8 @@ class zShapes():
         elif self.shape=='triangular' :
             shape_term = self.triangular(t_scaled)
 
-        return self.offset + self.amplitude * shape_term
+        z = self.offset + self.amplitude * shape_term # apply offset and scaling
+        return np.array([0,0,z])
 
     #######################
     ### SHAPE FUNCTIONS ###
