@@ -1,3 +1,6 @@
+from os.path import exists # to check if test has already been performed
+import time # for measurement of tests durations
+
 # for simulation
 from cfSimulator import cfSimulation 
 from cfSimulator import FlightDataHandler as fdh
@@ -25,7 +28,7 @@ z_test_directory    = 'z-test-set'
 # Duration of test flight:
 # should be defined according to the desired resolution
 # on "frequency" axis
-duration  = 2
+duration  = 60
 
 ### Shapes
 # get from the test shapes class the list of available
@@ -41,7 +44,21 @@ time_speeds = [1,2]
 ### Amplitude Coefficients
 # for each amplitude coefficient tests will be performed
 # using the coefficient to scale the amplitude of the signal
-amplitudes  = [1,2]
+amplitudes  = [0.25,0.5]
+
+####################
+### TEST WARM UP ###
+####################
+
+### Offset
+# parameter for basic hovering output
+# just to get the drone flying
+offset = 0.25
+
+### Settle
+# parameter that sets the time to wait in the tests
+# till the drone starts hovering 
+settle = 5
 
 #####################
 ### MAIN FUNCTION ###
@@ -50,5 +67,23 @@ amplitudes  = [1,2]
 if __name__ == "__main__":
 
     for s, a, t in itertools.product(shapes,time_speeds,amplitudes):
-        print(s,a,t)
 
+        # retrieve location and name of test output file
+        # name formed by shape, amplitude, and time
+        file_name = s+'-'+str(a)+'-'+str(t)
+        file_path = fdh.data_directory+'/'+z_test_directory+'/'+file_name
+
+        if not(exists(file_path)):
+            # If test has not been executed, run it
+            print(" * Executing Test {}".format(file_name))
+        
+            ref = zShapes(s,a,t,offset,settle)
+            sim = cfSimulation()
+            start_test = time.perf_counter()
+            storeObj   = sim.run(ref, duration)  # actual test execution
+            end_test   = time.perf_counter()
+            print(" >> {} took {} seconds".format(file_name, str(end_test-start_test)))
+            storeObj.save(z_test_directory+'/'+file_name) # store simulation results
+        else :
+            # If test has been executed skip it
+            print(" * Test {} already executed".format(file_name))
