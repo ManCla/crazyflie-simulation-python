@@ -66,7 +66,7 @@ if __name__ == "__main__":
 					end_test   = time.perf_counter()
 					print(" >> {} took {} seconds".format(file_name, str(end_test-start_test)))
 					storeObj.save(z_test_directory+'/'+file_name) # store simulation results
-					storeObj.unwrap(storeObj)
+					storeObj.unwrap(storeObj) # TODO -- not needed any longer
 				else :
 					# If test has been executed open the results file
 					print(" * Test {} already executed".format(file_name))

@@ -3,7 +3,7 @@ import time # for measurement of tests durations
 
 # for simulation
 from cfSimulator import cfSimulation 
-from cfSimulator import FlightDataHandler as fdh
+from cfSimulator import ZAnalysis as fdh
 from testCases.zTestSet import zShapes
 
 # for nice iteration loop

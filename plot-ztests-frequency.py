@@ -1,7 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from cfSimulator.utils.FlightDataHandler import FlightDataHandler as fdh
+from cfSimulator import ZAnalysis as fdh
 import scipy.signal as ss
 
 # directory inside the FlightDataHandler.data_directory directory
