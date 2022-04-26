@@ -207,8 +207,8 @@ class FlightDataHandler:
         axs[1, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[2, 1].title.set_text('Velocity (z)')
-        axs[1, 1].plot(self.time, self.vel[2,:], 'g')
-        axs[1, 1].plot(self.time, self.est_vel[2,:], 'g:')
+        axs[2, 1].plot(self.time, self.vel[2,:], 'r')
+        axs[2, 1].plot(self.time, self.est_vel[2,:], 'r:')
         axs[2, 1].legend(['velocity', 'estimated velocity'])
         axs[2, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
         print('* figure 2:\033[33m position and velocity (x,y,z)\033[0m')
