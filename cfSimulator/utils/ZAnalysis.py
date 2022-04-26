@@ -7,6 +7,22 @@ import scipy.fft as fft
 
 class ZAnalysis(FlightDataHandler):
 
+    # encoding of behaviours -- TODO: define as enum
+    bh_undefined       = 0
+    bh_good_tracking   = 1
+    bh_filtering       = 2
+    bh_good_tracking_extra = 3 
+    bh_sat_no_tracking = 4
+    bh_something_wrong = 5
+
+    # colour palette for behaviour coding
+    bh_palette = np.array([[255,255,255],  # black: bh_undefined
+                           [  0,255,  0],  # green: bh_good_tracking
+                           [  0,  0,255],  # blue : bh_filtering
+                           [  0,255,255],  # azure: bh_good_tracking_extra
+                           [255,  0,  0],  # red  : bh_sat_no_tracking
+                           [  0,  0,  0]]) # dark : bh_something_wrong
+
     def z_loop_frequency_plot(self):
         self.analyse_z() # needed to get the frequency spectrum
         fig, axs = plt.subplots(1, 1, figsize=self.chosen_size)
