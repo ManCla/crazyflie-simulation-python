@@ -1,10 +1,7 @@
-import os
 import time
 import pickle as pk
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.fft as fft
-import scipy.signal as signal
 
 class FlightDataHandler:
     data_directory = "flightdata"
