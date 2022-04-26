@@ -439,8 +439,6 @@ class FlightDataHandler:
         return self.z_filtering
 
     def compute_behaviour(self):
-        if self.test!="sinus":
-            return self.bh_undefined
         if not(hasattr(self, "behaviour")):
             self.analyse_z()
         return self.behaviour
