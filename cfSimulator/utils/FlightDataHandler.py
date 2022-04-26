@@ -50,11 +50,9 @@ class FlightDataHandler:
 
         with open(self.data_location, 'rb') as f:
             data = pk.load(f)
-        self.type = data.type
         self.unwrap(data)
         if not(silent):
             print('Reading data from file: \033[4m' + self.data_location + '\033[0m')
-            print('Type of test is: ' + self.type)
 
     def unwrap(self, data):
         # splitting data into specific values
@@ -62,14 +60,9 @@ class FlightDataHandler:
         self.test = data.test
         self.trace_length = len(self.time)
 
-        if not(self.type=='pitl'):
-            self.position_x = data.pos[0, :]
-            self.position_y = data.pos[1, :]
-            self.position_z = data.pos[2, :]
-        else:
-            self.position_x = np.zeros(self.trace_length)
-            self.position_y = np.zeros(self.trace_length)
-            self.position_z = np.zeros(self.trace_length)
+        self.position_x = data.pos[0, :]
+        self.position_y = data.pos[1, :]
+        self.position_z = data.pos[2, :]
         self.estimated_position_x = data.est_pos[0, :]
         self.estimated_position_y = data.est_pos[1, :]
         self.estimated_position_z = data.est_pos[2, :]
@@ -77,14 +70,9 @@ class FlightDataHandler:
         self.setpoint_position_y = data.set_pt[1, :]
         self.setpoint_position_z = data.set_pt[2, :]
 
-        if not(self.type=='pitl'):
-            self.velocity_x = data.vel[0, :]
-            self.velocity_y = data.vel[1, :]
-            self.velocity_z = data.vel[2, :]
-        else:
-            self.velocity_x = np.zeros(self.trace_length)
-            self.velocity_y = np.zeros(self.trace_length)
-            self.velocity_z = np.zeros(self.trace_length)
+        self.velocity_x = data.vel[0, :]
+        self.velocity_y = data.vel[1, :]
+        self.velocity_z = data.vel[2, :]
         self.estimated_velocity_x = data.est_vel[0, :]
         self.estimated_velocity_y = data.est_vel[1, :]
         self.estimated_velocity_z = data.est_vel[2, :]
@@ -93,14 +81,9 @@ class FlightDataHandler:
         self.acceleration_y = data.acc[1, :]
         self.acceleration_z = data.acc[2, :]
 
-        if not(self.type=='pitl'):
-            self.attitude_x = data.eta[0, :]
-            self.attitude_y = data.eta[1, :]
-            self.attitude_z = data.eta[2, :]
-        else:
-            self.attitude_x = np.zeros(self.trace_length)
-            self.attitude_y = np.zeros(self.trace_length)
-            self.attitude_z = np.zeros(self.trace_length)
+        self.attitude_x = data.eta[0, :]
+        self.attitude_y = data.eta[1, :]
+        self.attitude_z = data.eta[2, :]
         self.gyro_x = data.gyro[0, :]
         self.gyro_y = data.gyro[1, :]
         self.gyro_z = data.gyro[2, :]
@@ -108,14 +91,9 @@ class FlightDataHandler:
         self.pixel_count_x = data.pxCount[0, :]
         self.pixel_count_y = data.pxCount[1, :]
         self.range_z = data.zrange
-        if not(self.type=='pitl'):
-            self.kalman_error_x = data.err_fd[1, :]
-            self.kalman_error_y = data.err_fd[2, :]
-            self.kalman_error_z = data.err_fd[0, :]
-        else:
-            self.kalman_error_x = np.zeros(self.trace_length)
-            self.kalman_error_y = np.zeros(self.trace_length)
-            self.kalman_error_z = np.zeros(self.trace_length)
+        self.kalman_error_x = data.err_fd[1, :]
+        self.kalman_error_y = data.err_fd[2, :]
+        self.kalman_error_z = data.err_fd[0, :]
 
         self.control_motor_1 = data.u[0, :]
         self.control_motor_2 = data.u[1, :]
@@ -189,23 +167,13 @@ class FlightDataHandler:
     ##########################
 
     def trajectoryPlot(self):
-        if not(self.type=='pitl'):# plot trajectory in space
-            plt.figure('3D trajectory')
-            ax = plt.axes(projection="3d", label="uniquelabel")
-            ax.plot(self.position_x, self.position_y, self.position_z, 'r', label="position")
-            ax.set_xlabel('x')
-            ax.set_ylabel('y')
-            ax.set_zlabel('z')
-            print('* figure 1:\033[33m 3d position\033[0m')
-        else :
-            # plot trajectory in space
-            plt.figure('estimated 3D trajectory')
-            ax = plt.axes(projection="3d", label="uniquelabel")
-            ax.plot(self.estimated_position_x, self.estimated_position_y, self.estimated_position_z, 'r', label="position")
-            ax.set_xlabel('x')
-            ax.set_ylabel('y')
-            ax.set_zlabel('z')
-            print('* figure 1:\033[33m 3d position\033[0m')
+        plt.figure('3D trajectory')
+        ax = plt.axes(projection="3d", label="uniquelabel")
+        ax.plot(self.position_x, self.position_y, self.position_z, 'r', label="position")
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        print('* figure 1:\033[33m 3d position\033[0m')
 
     def positionSpeedPlot(self):
 
@@ -214,45 +182,39 @@ class FlightDataHandler:
 
         axs[0, 0].title.set_text('Position (x)')
         axs[0, 0].plot(self.time, self.setpoint_position_x, 'k')
-        if not(self.type=='pitl'):
-            axs[0, 0].plot(self.time, self.position_x, 'b')
+        axs[0, 0].plot(self.time, self.position_x, 'b')
         axs[0, 0].plot(self.time, self.estimated_position_x, 'b:')
         axs[0, 0].legend(['setpoint', 'position', 'estimated position'])
         axs[0, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[1, 0].title.set_text('Position (y)')
         axs[1, 0].plot(self.time, self.setpoint_position_y, 'k')
-        if not(self.type=='pitl'):
-            axs[1, 0].plot(self.time, self.position_y, 'g')
+        axs[1, 0].plot(self.time, self.position_y, 'g')
         axs[1, 0].plot(self.time, self.estimated_position_y, 'g:')
         axs[1, 0].legend(['setpoint', 'position', 'estimated position'])
         axs[1, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[2, 0].title.set_text('Position (z)')
         axs[2, 0].plot(self.time, self.setpoint_position_z, 'k')
-        if not(self.type=='pitl'):
-            axs[2, 0].plot(self.time, self.position_z, 'r')
+        axs[2, 0].plot(self.time, self.position_z, 'r')
         axs[2, 0].plot(self.time, self.estimated_position_z, 'r:')
         axs[2, 0].legend(['setpoint', 'position', 'estimated position'])
         axs[2, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[0, 1].title.set_text('Velocity (x)')
-        if not(self.type=='pitl'):
-            axs[0, 1].plot(self.time, self.velocity_x, 'b')
+        axs[0, 1].plot(self.time, self.velocity_x, 'b')
         axs[0, 1].plot(self.time, self.estimated_velocity_x, 'b:')
         axs[0, 1].legend(['velocity', 'estimated velocity'])
         axs[0, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[1, 1].title.set_text('Velocity (y)')
-        if not(self.type=='pitl'):
-            axs[1, 1].plot(self.time, self.velocity_y, 'g')
+        axs[1, 1].plot(self.time, self.velocity_y, 'g')
         axs[1, 1].plot(self.time, self.estimated_velocity_y, 'g:')
         axs[1, 1].legend(['velocity', 'estimated velocity'])
         axs[1, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[2, 1].title.set_text('Velocity (z)')
-        if not(self.type=='pitl'):
-            axs[2, 1].plot(self.time, self.velocity_z, 'r')
+        axs[2, 1].plot(self.time, self.velocity_z, 'r')
         axs[2, 1].plot(self.time, self.estimated_velocity_z, 'r:')
         axs[2, 1].legend(['velocity', 'estimated velocity'])
         axs[2, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
@@ -270,13 +232,12 @@ class FlightDataHandler:
         axs[0, 0].legend(['x', 'y', 'z'])
         axs[0, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
-        if not(self.type=='pitl'):
-            axs[0, 1].title.set_text('Attitude (x,y,z)')
-            axs[0, 1].plot(self.time, self.attitude_x, 'b')
-            axs[0, 1].plot(self.time, self.attitude_y, 'g')
-            axs[0, 1].plot(self.time, self.attitude_z, 'r')
-            axs[0, 1].legend(['x', 'y', 'z'])
-            axs[0, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
+        axs[0, 1].title.set_text('Attitude (x,y,z)')
+        axs[0, 1].plot(self.time, self.attitude_x, 'b')
+        axs[0, 1].plot(self.time, self.attitude_y, 'g')
+        axs[0, 1].plot(self.time, self.attitude_z, 'r')
+        axs[0, 1].legend(['x', 'y', 'z'])
+        axs[0, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[1, 0].title.set_text('Gyro (x,y,z)')
         axs[1, 0].plot(self.time, self.gyro_x, 'b')
@@ -296,13 +257,12 @@ class FlightDataHandler:
         axs[2, 0].legend(['x', 'y'])
         axs[2, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
-        if not(self.type=='pitl'):
-            axs[2, 1].title.set_text('Kalman errors (x,y,z)')
-            axs[2, 1].plot(self.time, self.kalman_error_x, 'b')
-            axs[2, 1].plot(self.time, self.kalman_error_y, 'g')
-            axs[2, 1].plot(self.time, self.kalman_error_z, 'r')
-            axs[2, 1].legend(['x', 'y', 'z'])
-            axs[2, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
+        axs[2, 1].title.set_text('Kalman errors (x,y,z)')
+        axs[2, 1].plot(self.time, self.kalman_error_x, 'b')
+        axs[2, 1].plot(self.time, self.kalman_error_y, 'g')
+        axs[2, 1].plot(self.time, self.kalman_error_z, 'r')
+        axs[2, 1].legend(['x', 'y', 'z'])
+        axs[2, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
         print('* figure 3:\033[33m sensor data and Kalman errors\033[0m')
 
     def controlActionPlot(self):

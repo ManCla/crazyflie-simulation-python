@@ -88,7 +88,6 @@ class cfSimulation():
 		##############################################
 
 		output = FlightDataHandler()
-		output.type    = "mitl"
 		output.test    = ref.trajectoryType
 		output.t       = t
 		output.x       = x_store
