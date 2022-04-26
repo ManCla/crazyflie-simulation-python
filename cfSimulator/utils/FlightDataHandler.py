@@ -35,6 +35,30 @@ class FlightDataHandler:
     def __init__(self):
         pass
 
+    # method called by the Simulation object to store the data
+    # in the FlightDataHandler object before saving
+    def store(self, trajectoryType, t, x, u, eta, acc, px_count, set_pt,\
+              z_range, kal_err_fd, x_est):
+        self.test    = trajectoryType
+        self.time    = t
+        # extract states
+        self.pos     = x[0:3,:]
+        self.vel     = x[3:6,:]
+        self.gyro    = x[10:13,:]
+        self.eta     = eta
+        # control action, measurements, and other cf data
+        self.u          = u
+        self.acc        = acc
+        self.px_count   = px_count
+        self.set_pt     = set_pt
+        self.z_range    = z_range
+        self.kal_err_fd = kal_err_fd
+        self.est_pos    = x_est[0:3,:]
+        self.est_vel    = x_est[3:6,:]
+        self.est_eta    = x_est[6:9,:]
+        # no need to retrieve trace length each time it is needed
+        self.trace_length = len(self.time)
+
     def save(self, name="no-name"):
         if name=="no-name" :
             # saves itself to file named as current date and time
@@ -50,55 +74,24 @@ class FlightDataHandler:
 
         with open(self.data_location, 'rb') as f:
             data = pk.load(f)
-        self.unwrap(data)
         if not(silent):
-            print('Reading data from file: \033[4m' + self.data_location + '\033[0m')
-
-    def unwrap(self, data):
-        # splitting data into specific values
-        self.time = data.t
-        self.test = data.test
-        self.trace_length = len(self.time)
-
-        self.position_x = data.pos[0, :]
-        self.position_y = data.pos[1, :]
-        self.position_z = data.pos[2, :]
-        self.estimated_position_x = data.est_pos[0, :]
-        self.estimated_position_y = data.est_pos[1, :]
-        self.estimated_position_z = data.est_pos[2, :]
-        self.setpoint_position_x = data.set_pt[0, :]
-        self.setpoint_position_y = data.set_pt[1, :]
-        self.setpoint_position_z = data.set_pt[2, :]
-
-        self.velocity_x = data.vel[0, :]
-        self.velocity_y = data.vel[1, :]
-        self.velocity_z = data.vel[2, :]
-        self.estimated_velocity_x = data.est_vel[0, :]
-        self.estimated_velocity_y = data.est_vel[1, :]
-        self.estimated_velocity_z = data.est_vel[2, :]
-
-        self.acceleration_x = data.acc[0, :]
-        self.acceleration_y = data.acc[1, :]
-        self.acceleration_z = data.acc[2, :]
-
-        self.attitude_x = data.eta[0, :]
-        self.attitude_y = data.eta[1, :]
-        self.attitude_z = data.eta[2, :]
-        self.gyro_x = data.gyro[0, :]
-        self.gyro_y = data.gyro[1, :]
-        self.gyro_z = data.gyro[2, :]
-
-        self.pixel_count_x = data.pxCount[0, :]
-        self.pixel_count_y = data.pxCount[1, :]
-        self.range_z = data.zrange
-        self.kalman_error_x = data.err_fd[1, :]
-        self.kalman_error_y = data.err_fd[2, :]
-        self.kalman_error_z = data.err_fd[0, :]
-
-        self.control_motor_1 = data.u[0, :]
-        self.control_motor_2 = data.u[1, :]
-        self.control_motor_3 = data.u[2, :]
-        self.control_motor_4 = data.u[3, :]
+            print('Read data from file: \033[4m' + self.data_location + '\033[0m')
+        self.test         = data.test
+        self.time         = data.time
+        self.pos          = data.pos
+        self.vel          = data.vel
+        self.gyro         = data.gyro
+        self.eta          = data.eta
+        self.u            = data.u
+        self.acc          = data.acc
+        self.px_count     = data.px_count
+        self.set_pt       = data.set_pt
+        self.z_range      = data.z_range
+        self.kal_err_fd   = data.kal_err_fd
+        self.est_pos      = data.est_pos
+        self.est_vel      = data.est_vel
+        self.est_eta      = data.est_eta
+        self.trace_length = data.trace_length
 
     ###############################
     ### CSV GENERATION FUNCTION ###
@@ -126,40 +119,40 @@ class FlightDataHandler:
             for i in range(self.trace_length):
                 ith_string = str(i) + ", " + \
                                          str(self.time[i]) + ", " + \
-                                         str(self.position_x[i]) + ", " + \
-                                         str(self.position_y[i]) + ", " + \
-                                         str(self.position_z[i]) + ", " + \
-                                         str(self.estimated_position_x[i]) + ", " + \
-                                         str(self.estimated_position_y[i]) + ", " + \
-                                         str(self.estimated_position_z[i]) + ", " + \
-                                         str(self.setpoint_position_x[i]) + ", " + \
-                                         str(self.setpoint_position_y[i]) + ", " + \
-                                         str(self.setpoint_position_z[i]) + ", " + \
-                                         str(self.velocity_x[i]) + ", " + \
-                                         str(self.velocity_y[i]) + ", " + \
-                                         str(self.velocity_z[i]) + ", " + \
-                                         str(self.estimated_velocity_x[i]) + ", " + \
-                                         str(self.estimated_velocity_y[i]) + ", " + \
-                                         str(self.estimated_velocity_z[i]) + ", " + \
-                                         str(self.acceleration_x[i]) + ", " + \
-                                         str(self.acceleration_y[i]) + ", " + \
-                                         str(self.acceleration_z[i]) + ", " + \
-                                         str(self.attitude_x[i]) + ", " + \
-                                         str(self.attitude_y[i]) + ", " + \
-                                         str(self.attitude_z[i]) + ", " + \
-                                         str(self.gyro_x[i]) + ", " + \
-                                         str(self.gyro_y[i]) + ", " + \
-                                         str(self.gyro_z[i]) + ", " + \
-                                         str(self.pixel_count_x[i]) + ", " + \
-                                         str(self.kalman_error_x[i]) + ", " + \
-                                         str(self.pixel_count_y[i]) + ", " + \
-                                         str(self.kalman_error_y[i]) + ", " + \
-                                         str(self.range_z[i]) + ", " + \
-                                         str(self.kalman_error_z[i]) + ", " + \
-                                         str(self.control_motor_1[i]) + ", " + \
-                                         str(self.control_motor_2[i]) + ", " + \
-                                         str(self.control_motor_3[i]) + ", " + \
-                                         str(self.control_motor_4[i]) + "\n"
+                                         str(self.pos[0, i]) + ", " + \
+                                         str(self.pos[1, i]) + ", " + \
+                                         str(self.pos[2, i]) + ", " + \
+                                         str(self.est_pos[0, i]) + ", " + \
+                                         str(self.est_pos[1, i]) + ", " + \
+                                         str(self.est_pos[2, i]) + ", " + \
+                                         str(self.set_pt[0, i]) + ", " + \
+                                         str(self.set_pt[1, i]) + ", " + \
+                                         str(self.set_pt[2, i]) + ", " + \
+                                         str(self.vel[0, i]) + ", " + \
+                                         str(self.vel[1, i]) + ", " + \
+                                         str(self.vel[2, i]) + ", " + \
+                                         str(self.est_vel[0, i]) + ", " + \
+                                         str(self.est_vel[1, i]) + ", " + \
+                                         str(self.est_vel[2, i]) + ", " + \
+                                         str(self.acc[0, i]) + ", " + \
+                                         str(self.acc[1, i]) + ", " + \
+                                         str(self.acc[2, i]) + ", " + \
+                                         str(self.eta[0, i]) + ", " + \
+                                         str(self.eta[1, i]) + ", " + \
+                                         str(self.eta[2, i]) + ", " + \
+                                         str(self.gyro[0, i]) + ", " + \
+                                         str(self.gyro[1, i]) + ", " + \
+                                         str(self.gyro[2, i]) + ", " + \
+                                         str(self.px_count[0, i]) + ", " + \
+                                         str(self.kal_err_fd[0, i]) + ", " + \
+                                         str(self.px_count[1, i]) + ", " + \
+                                         str(self.kal_err_fd[1,i]) + ", " + \
+                                         str(self.z_range[i]) + ", " + \
+                                         str(self.kal_err_fd[2, i]) + ", " + \
+                                         str(self.u[0, i]) + ", " + \
+                                         str(self.u[1, i]) + ", " + \
+                                         str(self.u[2, i]) + ", " + \
+                                         str(self.u[3, i]) + "\n"
                 f.write(ith_string)
 
     ##########################
@@ -169,7 +162,7 @@ class FlightDataHandler:
     def trajectoryPlot(self):
         plt.figure('3D trajectory')
         ax = plt.axes(projection="3d", label="uniquelabel")
-        ax.plot(self.position_x, self.position_y, self.position_z, 'r', label="position")
+        ax.plot(self.pos[0,:], self.pos[1,:], self.pos[2,:], 'r', label="position")
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
@@ -181,41 +174,41 @@ class FlightDataHandler:
         plt.subplots_adjust(wspace=0.2, hspace=1)
 
         axs[0, 0].title.set_text('Position (x)')
-        axs[0, 0].plot(self.time, self.setpoint_position_x, 'k')
-        axs[0, 0].plot(self.time, self.position_x, 'b')
-        axs[0, 0].plot(self.time, self.estimated_position_x, 'b:')
+        axs[0, 0].plot(self.time, self.set_pt[0,:], 'k')
+        axs[0, 0].plot(self.time, self.pos[0,:], 'b')
+        axs[0, 0].plot(self.time, self.est_pos[0,:], 'b:')
         axs[0, 0].legend(['setpoint', 'position', 'estimated position'])
         axs[0, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[1, 0].title.set_text('Position (y)')
-        axs[1, 0].plot(self.time, self.setpoint_position_y, 'k')
-        axs[1, 0].plot(self.time, self.position_y, 'g')
-        axs[1, 0].plot(self.time, self.estimated_position_y, 'g:')
+        axs[1, 0].plot(self.time, self.set_pt[1,:], 'k')
+        axs[1, 0].plot(self.time, self.pos[1,:], 'g')
+        axs[1, 0].plot(self.time, self.est_pos[1,:], 'g:')
         axs[1, 0].legend(['setpoint', 'position', 'estimated position'])
         axs[1, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[2, 0].title.set_text('Position (z)')
-        axs[2, 0].plot(self.time, self.setpoint_position_z, 'k')
-        axs[2, 0].plot(self.time, self.position_z, 'r')
-        axs[2, 0].plot(self.time, self.estimated_position_z, 'r:')
+        axs[2, 0].plot(self.time, self.set_pt[2,:], 'k')
+        axs[2, 0].plot(self.time, self.pos[2,:], 'r')
+        axs[2, 0].plot(self.time, self.est_pos[2,:], 'r:')
         axs[2, 0].legend(['setpoint', 'position', 'estimated position'])
         axs[2, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[0, 1].title.set_text('Velocity (x)')
-        axs[0, 1].plot(self.time, self.velocity_x, 'b')
-        axs[0, 1].plot(self.time, self.estimated_velocity_x, 'b:')
+        axs[0, 1].plot(self.time, self.vel[0,:], 'b')
+        axs[0, 1].plot(self.time, self.est_vel[0,:], 'b:')
         axs[0, 1].legend(['velocity', 'estimated velocity'])
         axs[0, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[1, 1].title.set_text('Velocity (y)')
-        axs[1, 1].plot(self.time, self.velocity_y, 'g')
-        axs[1, 1].plot(self.time, self.estimated_velocity_y, 'g:')
+        axs[1, 1].plot(self.time, self.vel[1,:], 'g')
+        axs[1, 1].plot(self.time, self.est_vel[1,:], 'g:')
         axs[1, 1].legend(['velocity', 'estimated velocity'])
         axs[1, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[2, 1].title.set_text('Velocity (z)')
-        axs[2, 1].plot(self.time, self.velocity_z, 'r')
-        axs[2, 1].plot(self.time, self.estimated_velocity_z, 'r:')
+        axs[1, 1].plot(self.time, self.vel[2,:], 'g')
+        axs[1, 1].plot(self.time, self.est_vel[2,:], 'g:')
         axs[2, 1].legend(['velocity', 'estimated velocity'])
         axs[2, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
         print('* figure 2:\033[33m position and velocity (x,y,z)\033[0m')
@@ -226,41 +219,41 @@ class FlightDataHandler:
         plt.subplots_adjust(wspace=0.2, hspace=1)
 
         axs[0, 0].title.set_text('Acceleration (x,y,z)')
-        axs[0, 0].plot(self.time, self.acceleration_x, 'b')
-        axs[0, 0].plot(self.time, self.acceleration_y, 'g')
-        axs[0, 0].plot(self.time, self.acceleration_z, 'r')
+        axs[0, 0].plot(self.time, self.acc[0,:], 'b')
+        axs[0, 0].plot(self.time, self.acc[1,:], 'g')
+        axs[0, 0].plot(self.time, self.acc[2,:], 'r')
         axs[0, 0].legend(['x', 'y', 'z'])
         axs[0, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[0, 1].title.set_text('Attitude (x,y,z)')
-        axs[0, 1].plot(self.time, self.attitude_x, 'b')
-        axs[0, 1].plot(self.time, self.attitude_y, 'g')
-        axs[0, 1].plot(self.time, self.attitude_z, 'r')
+        axs[0, 1].plot(self.time, self.eta[0,:], 'b')
+        axs[0, 1].plot(self.time, self.eta[1,:], 'g')
+        axs[0, 1].plot(self.time, self.eta[2,:], 'r')
         axs[0, 1].legend(['x', 'y', 'z'])
         axs[0, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[1, 0].title.set_text('Gyro (x,y,z)')
-        axs[1, 0].plot(self.time, self.gyro_x, 'b')
-        axs[1, 0].plot(self.time, self.gyro_y, 'g')
-        axs[1, 0].plot(self.time, self.gyro_z, 'r')
+        axs[1, 0].plot(self.time, self.gyro[0,:], 'b')
+        axs[1, 0].plot(self.time, self.gyro[1,:], 'g')
+        axs[1, 0].plot(self.time, self.gyro[2,:], 'r')
         axs[1, 0].legend(['x', 'y', 'z'])
         axs[1, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[1, 1].title.set_text('z-range')
-        axs[1, 1].plot(self.time, self.range_z, 'r')
+        axs[1, 1].plot(self.time, self.z_range, 'r')
         axs[1, 1].legend(['z'])
         axs[1, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[2, 0].title.set_text('Pixel count (x,y)')
-        axs[2, 0].plot(self.time, self.pixel_count_x, 'b')
-        axs[2, 0].plot(self.time, self.pixel_count_y, 'g')
+        axs[2, 0].plot(self.time, self.px_count[0,:], 'b')
+        axs[2, 0].plot(self.time, self.px_count[1,:], 'g')
         axs[2, 0].legend(['x', 'y'])
         axs[2, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[2, 1].title.set_text('Kalman errors (x,y,z)')
-        axs[2, 1].plot(self.time, self.kalman_error_x, 'b')
-        axs[2, 1].plot(self.time, self.kalman_error_y, 'g')
-        axs[2, 1].plot(self.time, self.kalman_error_z, 'r')
+        axs[2, 1].plot(self.time, self.kal_err_fd[0,:], 'b')
+        axs[2, 1].plot(self.time, self.kal_err_fd[1,:], 'g')
+        axs[2, 1].plot(self.time, self.kal_err_fd[2,:], 'r')
         axs[2, 1].legend(['x', 'y', 'z'])
         axs[2, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
         print('* figure 3:\033[33m sensor data and Kalman errors\033[0m')
@@ -271,19 +264,19 @@ class FlightDataHandler:
         plt.subplots_adjust(wspace=0.2, hspace=1)
 
         axs[0, 0].title.set_text('Motor control signals (u1)')
-        axs[0, 0].plot(self.time, self.control_motor_1, 'k')
+        axs[0, 0].plot(self.time, self.u[0,:], 'k')
         axs[0, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[0, 1].title.set_text('Motor control signals (u2)')
-        axs[0, 1].plot(self.time, self.control_motor_2, 'dimgray')
+        axs[0, 1].plot(self.time, self.u[1,:], 'dimgray')
         axs[0, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[1, 0].title.set_text('Motor control signals (u3)')
-        axs[1, 0].plot(self.time, self.control_motor_3, 'darkgray')
+        axs[1, 0].plot(self.time, self.u[2,:], 'darkgray')
         axs[1, 0].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
 
         axs[1, 1].title.set_text('Motor control signals (u4)')
-        axs[1, 1].plot(self.time, self.control_motor_4, 'lightgray')
+        axs[1, 1].plot(self.time, self.u[3,:], 'lightgray')
         axs[1, 1].grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
         print('* figure 4:\033[33m motor control signals (u1,u2,u3,u4)\033[0m')
 
@@ -347,27 +340,27 @@ class FlightDataHandler:
         
         # TIME DOM. ANALYSIS: iterate over time and perform actual analysis
         for i in time_range:
-            abs_error = np.abs(self.setpoint_position_z[i] - self.position_z[i])
+            abs_error = np.abs(self.set_pt[2,i] - self.pos[2,:][i])
             if abs_error>max_error :
                 max_error = abs_error
-            err_rel = err_rel + abs_error/self.setpoint_position_z[i]
+            err_rel = err_rel + abs_error/self.set_pt[2,i]
             err_abs_cum = err_abs_cum + abs_error
             mot_sat_tot = mot_sat_tot + \
-                          (self.control_motor_1[i]<thrust_min+1 or\
-                           self.control_motor_1[i]>thrust_max-1)
-            hit_ground  = hit_ground + (self.position_z[i]<0.01)
+                          (self.u[0,i]<thrust_min+1 or\
+                           self.u[0,i]>thrust_max-1)
+            hit_ground  = hit_ground + (self.pos[2,:][i]<0.01)
         
         # FREQ. DOM. ANALYSIS
         # detrend signals (otherwise 0-freq component hides everything)
         if (self.test=="sinus"):
             # if test is a sinus test remove warm up
-            z_ref_detrended = signal.detrend(self.setpoint_position_z[settle:self.trace_length],type='constant')
-            z_pos_detrended = signal.detrend(self.position_z[settle:self.trace_length],type='constant')
+            z_ref_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length],type='constant')
+            z_pos_detrended = signal.detrend(self.pos[2,:][settle:self.trace_length],type='constant')
             z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
         else :
             # otherwise use the whole trace
-            z_ref_detrended = signal.detrend(self.setpoint_position_z,type='constant')
-            z_pos_detrended = signal.detrend(self.position_z,type='constant')
+            z_ref_detrended = signal.detrend(self.set_pt[2,:],type='constant')
+            z_pos_detrended = signal.detrend(self.pos[2,:],type='constant')
             z_fft_freq = fft.fftfreq((self.trace_length), d=dt)
         # fft computation
         z_ref_fft  = list(map(abs, fft.fft(z_ref_detrended)))

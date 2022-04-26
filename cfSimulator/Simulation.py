@@ -88,26 +88,8 @@ class cfSimulation():
 		##############################################
 
 		output = FlightDataHandler()
-		output.test    = ref.trajectoryType
-		output.t       = t
-		output.x       = x_store
-		output.u       = u_store
-
-		# extract states
-		output.pos     = x_store[0:3,:]
-		output.vel     = x_store[3:6,:]
-		output.eta     = eta
-		output.gyro    = x_store[10:13,:]
-
-		# measurements and other cf data
-		output.acc     = acc
-		output.pxCount = pxCount
-		output.set_pt  = set_pt
-		output.zrange  = zrange
-		output.err_fd  = err_fd
-		output.est_pos = x_est[0:3,:]
-		output.est_vel = x_est[3:6,:]
-		output.est_eta = x_est[6:9,:]
+		output.store(ref.trajectoryType, t, x_store, u_store, eta, \
+					 acc, pxCount, set_pt, zrange, err_fd, x_est)
 
 		# return simulation data
 		return output
