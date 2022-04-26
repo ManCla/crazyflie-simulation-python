@@ -323,7 +323,7 @@ class FlightDataHandler:
         dt = 0.001         # sampling time in seconds
         thrust_min = 20000 # saturation limits of motors
         thrust_max = 65535 # 
-        settle     = int(10/dt) # 
+        settle     = int(5/dt) #
         # time in percentage of test trace length above which the drone is considered to have hit the saturations
         motors_saturated_threshold = 0.001 
         # deviation from expected gain of 1 that is accepted for good reference tracking
