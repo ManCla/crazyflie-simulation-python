@@ -67,12 +67,8 @@ class ZAnalysis(FlightDataHandler):
         avg_error_rel_threshold = 0.5
         ### END PARAMETERS
 
-        if (self.test=="sinus"):
-            # if test was a sinus remove the warm up in the first 5 seconds
-            time_range = range(settle,self.trace_length)
-        else :
-            # otherwise include the whole test
-            time_range = range(1,self.trace_length)
+        # remove the warm up (defined by settle variable)
+        time_range = range(settle,self.trace_length)
         
         # TIME DOM. ANALYSIS: iterate over time and perform actual analysis
         for i in time_range:
@@ -88,16 +84,10 @@ class ZAnalysis(FlightDataHandler):
         
         # FREQ. DOM. ANALYSIS
         # detrend signals (otherwise 0-freq component hides everything)
-        if (self.test=="sinus"):
-            # if test is a sinus test remove warm up
-            z_ref_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length],type='constant')
-            z_pos_detrended = signal.detrend(self.pos[2,:][settle:self.trace_length],type='constant')
-            z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
-        else :
-            # otherwise use the whole trace
-            z_ref_detrended = signal.detrend(self.set_pt[2,:],type='constant')
-            z_pos_detrended = signal.detrend(self.pos[2,:],type='constant')
-            z_fft_freq = fft.fftfreq((self.trace_length), d=dt)
+        z_ref_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length],type='constant')
+        z_pos_detrended = signal.detrend(self.pos[2,:][settle:self.trace_length],type='constant')
+        z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
+
         # fft computation
         z_ref_fft  = list(map(abs, fft.fft(z_ref_detrended)))
         z_pos_fft  = list(map(abs, fft.fft(z_pos_detrended)))
@@ -113,33 +103,31 @@ class ZAnalysis(FlightDataHandler):
         # compute saturation and ground time as percentage of total test time
         self.motors_saturated_time  = mot_sat_tot/(self.trace_length-settle)
         self.hit_ground_time        = hit_ground/(self.trace_length-settle)
-        if (self.test=="sinus"):
-            # check for filtering of reference's frequency with largest component
-            index_input_freq = np.where(self.z_ref_fft== np.amax(self.z_ref_fft))
-            self.z_filtering =  self.z_pos_fft[index_input_freq[0][0]]\
-                                /self.z_ref_fft[index_input_freq[0][0]]
+        # check for filtering of reference's frequency with largest component
+        index_input_freq = np.where(self.z_ref_fft== np.amax(self.z_ref_fft))
+        self.z_filtering =  self.z_pos_fft[index_input_freq[0][0]]\
+                            /self.z_ref_fft[index_input_freq[0][0]]
 
         # define behavioural region on the base of: 
         #  - hitting saturations
         #  - good reference tracking
         #  - filtering reference
         self.behaviour = self.bh_undefined
-        if (self.test == "sinus"):
-            if self.motors_saturated_time<motors_saturated_threshold : 
-                # we have not saturated
-                if abs(self.z_filtering-1)>filtering_threshold :
-                    self.behaviour = self.bh_filtering
-                else :
-                    if self.z_avg_error_rel>avg_error_rel_threshold :
-                        self.behaviour = self.bh_something_wrong
-                    else :
-                        self.behaviour = self.bh_good_tracking
+        if self.motors_saturated_time<motors_saturated_threshold : 
+            # we have not saturated
+            if abs(self.z_filtering-1)>filtering_threshold :
+                self.behaviour = self.bh_filtering
             else :
-                # we have saturated
-                if self.z_avg_error_rel<avg_error_rel_threshold :
-                    self.behaviour = self.bh_good_tracking_extra
+                if self.z_avg_error_rel>avg_error_rel_threshold :
+                    self.behaviour = self.bh_something_wrong
                 else :
-                    self.behaviour = self.bh_sat_no_tracking
+                    self.behaviour = self.bh_good_tracking
+        else :
+            # we have saturated
+            if self.z_avg_error_rel<avg_error_rel_threshold :
+                self.behaviour = self.bh_good_tracking_extra
+            else :
+                self.behaviour = self.bh_sat_no_tracking
 
     def compute_z_avg_error_abs(self):
         if not(hasattr(self, "z_avg_error_abs")):
@@ -168,8 +156,6 @@ class ZAnalysis(FlightDataHandler):
         return self.hit_ground_time
 
     def compute_z_filtering(self):
-        if self.test!="sinus":
-            return 0
         if not(hasattr(self, "z_filtering")):
             self.analyse_z()
         return self.z_filtering
