@@ -3,7 +3,7 @@ from . import FlightDataHandler
 import numpy as np
 import scipy.signal as signal
 import scipy.fft as fft
-
+import matplotlib.pyplot as plt
 
 class ZAnalysis(FlightDataHandler):
 
@@ -39,10 +39,7 @@ class ZAnalysis(FlightDataHandler):
     ### function to generate and show all plots available
     ### Override parent method to plot also z loop frequency spectrum
     def show_all(self):
-        self.trajectoryPlot()
         self.positionSpeedPlot()
-        self.sensorReadingsPlot()
-        self.controlActionPlot()
         self.z_loop_frequency_plot()
         plt.show()
 
