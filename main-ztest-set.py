@@ -39,7 +39,7 @@ shapes = zShapes.shapes
 ### Time Coefficients
 # for each time coefficient tests will be performed
 # using the coefficient to shrink a dilate time
-time_speeds = [1,2,3,4,5,6,7,8]
+time_speeds = [1,2,3,4,5]
 
 ### Amplitude Coefficients
 # for each amplitude coefficient tests will be performed
