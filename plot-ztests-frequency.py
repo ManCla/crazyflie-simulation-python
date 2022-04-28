@@ -46,12 +46,12 @@ if __name__ == "__main__":
         # actual plotting for each test
         bh_color=fdh.bh_palette[data_storage.behaviour]/255
         if plot_only_peaks :
-            peaks, _ = ss.find_peaks(data_storage.z_ref_fft)
-            ax.plot(np.array(data_storage.z_fft_freq)[peaks],\
-                    np.array(data_storage.z_ref_fft)[peaks],\
+            peaks, _ = ss.find_peaks(data_storage.compute_z_ref_fft())
+            ax.plot(np.array(data_storage.compute_z_fft_freq())[peaks],\
+                    np.array(data_storage.compute_z_ref_fft())[peaks],\
                     "x",color=bh_color)
         else : 
-            ax.plot(data_storage.z_fft_freq, data_storage.z_ref_fft, color=bh_color, linewidth=1)
+            ax.plot(data_storage.compute_z_fft_freq(), data_storage.compute_z_ref_fft(), color=bh_color, linewidth=1)
             ax.set_xlim([0, 1]) # spectrum above 1Hz seems to be basically zero
 
     plt.show()

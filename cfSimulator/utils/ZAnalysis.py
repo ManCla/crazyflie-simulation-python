@@ -164,3 +164,18 @@ class ZAnalysis(FlightDataHandler):
         if not(hasattr(self, "behaviour")):
             self.analyse_z()
         return self.behaviour
+
+    def compute_z_fft_freq(self):
+        if not(hasattr(self, "z_fft_freq")):
+            self.analyse_z()
+        return self.z_fft_freq
+
+    def compute_z_pos_fft(self):
+        if not(hasattr(self, "z_pos_fft")):
+            self.analyse_z()
+        return self.z_pos_fft
+
+    def compute_z_ref_fft(self):
+        if not(hasattr(self, "z_ref_fft")):
+            self.analyse_z()
+        return self.z_ref_fft
