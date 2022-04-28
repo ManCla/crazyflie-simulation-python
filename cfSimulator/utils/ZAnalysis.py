@@ -24,7 +24,8 @@ class ZAnalysis(FlightDataHandler):
                            [  0,  0,  0]]) # dark : bh_something_wrong
 
     def z_loop_frequency_plot(self):
-        self.analyse_z() # needed to get the frequency spectrum
+        if not(hasattr(self, "z_fft_freq")):
+            self.analyse_z() # needed to get the frequency spectrum
         fig, axs = plt.subplots(1, 1, figsize=self.chosen_size)
         plt.subplots_adjust(wspace=0.2, hspace=1)
         min_freq_plot = 0
