@@ -96,6 +96,14 @@ class ZAnalysis(FlightDataHandler):
         self.z_ref_fft = z_ref_fft[:len(z_ref_fft)//2]
         self.z_pos_fft = z_pos_fft[:len(z_pos_fft)//2]
         self.z_fft_freq = z_fft_freq[:len(z_fft_freq)//2]
+
+        # find peaks in spectrum
+        # TODO --- think of different possible definitions of peaks in spectrum
+        # TODO --- could consider also filtering peaks that are too high in freq
+        peaks, _ = signal.find_peaks(self.z_ref_fft, height=0.1*max(self.z_ref_fft))
+        self.z_fft_freq_peaks = np.array(self.z_fft_freq)[peaks]
+        self.z_ref_fft_peaks = np.array(self.z_ref_fft)[peaks]
+        # TODO fin frequency peaks on output?
         
         # finalize analysis
         self.z_avg_error_abs        = err_abs_cum/(self.trace_length-settle)
@@ -179,3 +187,13 @@ class ZAnalysis(FlightDataHandler):
         if not(hasattr(self, "z_ref_fft")):
             self.analyse_z()
         return self.z_ref_fft
+
+    def get_z_fft_freq_peaks(self):
+        if not(hasattr(self, "z_fft_freq_peaks")):
+            self.analyse_z()
+        return self.z_fft_freq_peaks
+
+    def get_z_ref_fft_peaks(self):
+        if not(hasattr(self, "z_ref_fft_peaks")):
+            self.analyse_z()
+        return self.z_ref_fft_peaks

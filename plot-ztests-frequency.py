@@ -2,7 +2,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from cfSimulator import ZAnalysis as fdh
-import scipy.signal as ss
 
 # directory inside the FlightDataHandler.data_directory directory
 # where to take the data for the analysis
@@ -41,17 +40,20 @@ if __name__ == "__main__":
         file_path = directory+'/'+file
         data_storage = fdh()
         data_storage.open(file_path, silent=True)
-        data_storage.analyse_z() # needed to get the frequency spectrum
 
         # actual plotting for each test
-        bh_color=fdh.bh_palette[data_storage.behaviour]/255
+        bh_color=fdh.bh_palette[data_storage.get_behaviour()]/255
         if plot_only_peaks :
-            peaks, _ = ss.find_peaks(data_storage.get_z_ref_fft())
-            ax.plot(np.array(data_storage.get_z_fft_freq())[peaks],\
-                    np.array(data_storage.get_z_ref_fft())[peaks],\
+            ax.plot(data_storage.get_z_fft_freq_peaks(),\
+                    data_storage.get_z_ref_fft_peaks(),\
                     "x",color=bh_color)
-        else : 
-            ax.plot(data_storage.get_z_fft_freq(), data_storage.get_z_ref_fft(), color=bh_color, linewidth=1)
-            ax.set_xlim([0, 1]) # spectrum above 1Hz seems to be basically zero
+            ax.plot(data_storage.get_z_fft_freq(),\
+                    data_storage.get_z_ref_fft(),\
+                    color=bh_color)
+        else :
+            ax.plot(data_storage.get_z_fft_freq(),\
+                    data_storage.get_z_ref_fft(),\
+                    color=bh_color, linewidth=1)
+        ax.set_xlim([0, 5]) # spectrum above 1Hz seems to be basically zero
 
     plt.show()
