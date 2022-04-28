@@ -129,53 +129,52 @@ class ZAnalysis(FlightDataHandler):
             else :
                 self.behaviour = self.bh_sat_no_tracking
 
-    def compute_z_avg_error_abs(self):
+    def get_z_avg_error_abs(self):
         if not(hasattr(self, "z_avg_error_abs")):
             self.analyse_z()
         return self.z_avg_error_abs
 
-    def compute_z_avg_error_rel(self):
+    def get_z_avg_error_rel(self):
         if not(hasattr(self, "z_avg_error_rel")):
             self.analyse_z()
         return self.z_avg_error_rel
 
-    def compute_z_max_error(self):
+    def get_z_max_error(self):
         if not(hasattr(self, "z_max_error")):
             self.analyse_z()
         return self.z_max_error
 
-    def motors_saturated(self):
-        # return the number of time steps in which the controller was saturated
+    def get_motors_saturated(self):
         if not(hasattr(self, "motors_saturated_time")):
             self.analyse_z()
         return self.motors_saturated_time
 
-    def hit_ground(self):
+    def get_hit_ground(self):
         if not(hasattr(self, "hit_ground_time")):
             self.analyse_z()
         return self.hit_ground_time
 
-    def compute_z_filtering(self):
+    def get_z_filtering(self):
         if not(hasattr(self, "z_filtering")):
             self.analyse_z()
         return self.z_filtering
 
-    def compute_behaviour(self):
+    def get_behaviour(self):
         if not(hasattr(self, "behaviour")):
             self.analyse_z()
         return self.behaviour
 
-    def compute_z_fft_freq(self):
+    def get_z_fft_freq(self):
         if not(hasattr(self, "z_fft_freq")):
             self.analyse_z()
         return self.z_fft_freq
 
-    def compute_z_pos_fft(self):
+    def get_z_pos_fft(self):
         if not(hasattr(self, "z_pos_fft")):
             self.analyse_z()
         return self.z_pos_fft
 
-    def compute_z_ref_fft(self):
+    def get_z_ref_fft(self):
         if not(hasattr(self, "z_ref_fft")):
             self.analyse_z()
         return self.z_ref_fft

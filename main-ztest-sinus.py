@@ -74,13 +74,13 @@ if __name__ == "__main__":
 					storeObj.open(file_path,True)
 
 				# store test results (independently if test was already executed or not)
-				z_avg_error[j,i]      = storeObj.compute_z_avg_error_abs()
-				z_avg_error_rel[j,i]  = storeObj.compute_z_avg_error_rel()
-				z_max_error[j,i]      = storeObj.compute_z_max_error()
-				motors_saturated[j,i] = storeObj.motors_saturated()
-				hit_ground[j,i]       = storeObj.hit_ground()
-				z_filtering[j,i]      = storeObj.compute_z_filtering()
-				behaviour[j,i]        = storeObj.compute_behaviour()
+				z_avg_error[j,i]      = storeObj.get_z_avg_error_abs()
+				z_avg_error_rel[j,i]  = storeObj.get_z_avg_error_rel()
+				z_max_error[j,i]      = storeObj.get_z_max_error()
+				motors_saturated[j,i] = storeObj.get_motors_saturated()
+				hit_ground[j,i]       = storeObj.get_hit_ground()
+				z_filtering[j,i]      = storeObj.get_z_filtering()
+				behaviour[j,i]        = storeObj.get_behaviour()
 
 	## write results to csv
 	out_path = fdh.data_directory+'/'+z_results_directory+'/'
