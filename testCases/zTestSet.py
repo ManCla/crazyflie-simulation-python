@@ -5,6 +5,7 @@ Class that generates general test cases according to...
 TODO: write class description
  - base period for shape functions is 10 seconds
  - base amplitude range for shape functions is [0,1]
+ - avoid discontinuity at beginning of shape (after warm up)
 '''
 
 base_period = 10
@@ -13,7 +14,7 @@ base_amplitude = 1
 class zShapes():
     
     # list of available shapes
-    shapes = ['steps', 'trapezoidal', 'triangular']
+    shapes = ['steps', 'trapezoidal', 'triangular','sinus']
 
     def __init__(self, shape, amplitude, time, offset, settle):
         
@@ -45,6 +46,8 @@ class zShapes():
             shape_term = self.trapezoidal(t_scaled)
         elif self.shape=='triangular' :
             shape_term = self.triangular(t_scaled)
+        elif self.shape=='sinus' :
+            shape_term = self.sinus(t_scaled)
 
         z = self.offset + self.amplitude * shape_term # apply offset and scaling
         return np.array([0,0,z])
@@ -75,3 +78,7 @@ class zShapes():
             return 1-((t-base_period/2) % base_period)/(base_period/4)
         else :
             return 0
+
+    def sinus(self, t):
+        # make sinus start from 270 degrees so that we avoid discontinuities in reference
+        return 1+np.sin((np.pi*3/2)+((t % base_period)/base_period)*2*np.pi)
