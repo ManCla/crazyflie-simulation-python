@@ -29,10 +29,12 @@ class ZAnalysis(FlightDataHandler):
         fig, axs = plt.subplots(1, 1, figsize=self.chosen_size)
         plt.subplots_adjust(wspace=0.2, hspace=1)
         min_freq_plot = 0
-        max_freq_plot = 6
+        max_freq_plot = 3
         axs.title.set_text('Frequency spectrum of z reference and z position')
         axs.plot(self.z_fft_freq, self.z_ref_fft, 'k')
         axs.plot(self.z_fft_freq, self.z_pos_fft, 'red')
+        axs.plot(self.z_fft_freq, self.z_err_fft, 'green')
+        axs.legend(['reference','position','error'])
         axs.set_xlim([min_freq_plot, max_freq_plot])
         axs.grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
         print('* figure 5:\033[33m frequency spectrum of z reference and position\033[0m')
@@ -85,14 +87,18 @@ class ZAnalysis(FlightDataHandler):
         
         # FREQ. DOM. ANALYSIS
         # detrend signals (otherwise 0-freq component hides everything)
+        z_err_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length]\
+                                        -self.pos[2,:][settle:self.trace_length],type='constant')
         z_ref_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length],type='constant')
         z_pos_detrended = signal.detrend(self.pos[2,:][settle:self.trace_length],type='constant')
         z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
 
         # fft computation
+        z_err_fft  = list(map(abs, fft.fft(z_err_detrended)))
         z_ref_fft  = list(map(abs, fft.fft(z_ref_detrended)))
         z_pos_fft  = list(map(abs, fft.fft(z_pos_detrended)))
         # spectrum is symmetric
+        self.z_err_fft = z_err_fft[:len(z_err_fft)//2]
         self.z_ref_fft = z_ref_fft[:len(z_ref_fft)//2]
         self.z_pos_fft = z_pos_fft[:len(z_pos_fft)//2]
         self.z_fft_freq = z_fft_freq[:len(z_fft_freq)//2]
@@ -113,6 +119,7 @@ class ZAnalysis(FlightDataHandler):
         self.motors_saturated_time  = mot_sat_tot/(self.trace_length-settle)
         self.hit_ground_time        = hit_ground/(self.trace_length-settle)
         # check for filtering of reference's frequency with largest component
+        # TODO --- define filtering on more than the highest peak
         index_input_freq = np.where(self.z_ref_fft== np.amax(self.z_ref_fft))
         self.z_filtering =  self.z_pos_fft[index_input_freq[0][0]]\
                             /self.z_ref_fft[index_input_freq[0][0]]
