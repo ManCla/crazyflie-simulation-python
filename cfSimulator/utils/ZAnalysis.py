@@ -17,7 +17,7 @@ class ZAnalysis(FlightDataHandler):
     bh_no_linear       = 4
 
     # colour palette for behaviour coding
-    bh_palette = np.array([[255,255,255],  # black: bh_undefined
+    bh_palette = np.array([[155,155,155],  # grey : bh_undefined
                            [  0,255,  0],  # green: bh_good_tracking
                            [  0,  0,255],  # blue : bh_filtering
                            [  0,255,255],  # azure: bh_good_tracking_extra
@@ -103,7 +103,7 @@ class ZAnalysis(FlightDataHandler):
         err_peaks_indexes, _  = signal.find_peaks(self.z_err_fft, height=0.3*max(self.z_err_fft))
         self.z_err_freq_peaks = np.array(self.z_fft_freq)[err_peaks_indexes]
         self.z_err_amp_peaks  = np.array(self.z_err_fft)[err_peaks_indexes]
-        
+
         # determine behaviour
         self.freq_analysis_behaviour = [self.bh_undefined] * len(ref_peaks_indexes)
         # iterate over frequency of peaks of position spectrum
@@ -223,7 +223,7 @@ class ZAnalysis(FlightDataHandler):
     def get_behaviour(self):
         if not(hasattr(self, "behaviour")):
             self.freq_behaviour_z()
-        return self.freq_analysis_behaviour[0]
+        return self.freq_analysis_behaviour
 
     def get_z_fft_freq(self):
         if not(hasattr(self, "z_fft_freq")):
