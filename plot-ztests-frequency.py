@@ -52,30 +52,30 @@ if __name__ == "__main__":
         data_storage.open(file_path, silent=True)
 
         if data_storage.test=="steps" :
-            index = 0
+            plot_index = 0
         elif data_storage.test=="triangular" :
-            index = 1
+            plot_index = 1
         elif data_storage.test=="trapezoidal" :
-            index = 2
+            plot_index = 2
         elif data_storage.test=="sinus" :
-            index = 3
+            plot_index = 3
 
         # actual plotting for each test
         bh_color=fdh.bh_palette[data_storage.get_behaviour()]/255
         if plot_only_peaks :
-            ax[index].plot(data_storage.get_z_fft_freq_peaks(),\
-                           data_storage.get_z_ref_fft_peaks(),\
-                           "x",color=bh_color)
-            ax2.plot(data_storage.get_z_fft_freq_peaks(),\
-                     data_storage.get_z_ref_fft_peaks(),\
-                     "x",color=bh_color)
+            ax[plot_index].scatter(data_storage.get_z_fft_freq_peaks(),\
+                                   data_storage.get_z_ref_fft_peaks(),\
+                                   marker='x',c=bh_color)
+            ax2.scatter(data_storage.get_z_fft_freq_peaks(),\
+                        data_storage.get_z_ref_fft_peaks(),\
+                        marker='x',c=bh_color)
         else :
-            ax[index].plot(data_storage.get_z_fft_freq(),\
-                           data_storage.get_z_ref_fft(),\
-                           color=bh_color, linewidth=1)
+            ax[plot_index].plot(data_storage.get_z_fft_freq(),\
+                                   data_storage.get_z_ref_fft(),\
+                                   c=bh_color, linewidth=1)
             ax2.plot(data_storage.get_z_fft_freq(),\
-                     data_storage.get_z_ref_fft(),\
-                     color=bh_color, linewidth=1)
+                        data_storage.get_z_ref_fft(),\
+                        c=bh_color, linewidth=1)
     x_max = 3
     y_max = 120000
     ax[0].set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
