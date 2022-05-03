@@ -67,12 +67,19 @@ class ZAnalysis(FlightDataHandler):
 
         ### PARAMETERS -- TODO should be defined elsewhere
         peak_threshold = 0.3 # percentage of maximum peak above which we look for more peaks
+        thrust_min = 20000 # saturation limits of motors
+        thrust_max = 65535 #
         dt     = 0.001     # sampling time in seconds
         settle = int(5/dt) # test  warm up time not used in analysis
         freq_diff_tolerance = 2 # maximum accepted difference in indexes over freq vector of peaks
+        # number of samples of test trace length above which the drone
+        # is considered to have hit the saturations
+        stain_mot_sat = False # if you want to mark behaviour also according to motor saturation
+        motors_saturated_threshold = int(0.05*self.trace_length)
         ### END PARAMETERS
 
         # detrend signals (otherwise 0-freq component hides everything)
+        # TODO --- try without detrend
         z_err_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length]\
                                         -self.pos[2,:][settle:self.trace_length],type='constant')
         z_ref_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length],type='constant')
@@ -108,6 +115,9 @@ class ZAnalysis(FlightDataHandler):
 
         # determine behaviour
         self.freq_analysis_behaviour = [self.bh_undefined] * len(ref_peaks_indexes)
+        # detect motor saturation
+        mot_sat = sum([(x==thrust_min or x==thrust_max) for x in self.u[0,settle:self.trace_length]])\
+                  >motors_saturated_threshold
         # iterate over frequency of peaks of position spectrum
         for pp_idx in pos_peaks_indexes :
             # look for same peak in reference spectrum peaks
@@ -117,12 +127,20 @@ class ZAnalysis(FlightDataHandler):
                 idx = find_pos_peak.index(True)
                 if self.z_pos_fft[ref_peaks_indexes[idx]]>self.z_err_fft[ref_peaks_indexes[idx]]:
                     self.freq_analysis_behaviour[idx] = self.bh_good_tracking
+                    if stain_mot_sat and mot_sat : # has this test saturated?
+                        self.freq_analysis_behaviour[idx] = self.bh_good_tracking_extra
                 else :
                     self.freq_analysis_behaviour[idx] = self.bh_filtering
+                    if stain_mot_sat and mot_sat : # has this test saturated?
+                        self.freq_analysis_behaviour[idx] = self.bh_filtering_extra
             else :
                 # peak was not found: non-linear behaviour detected, mark all input frequencies
                 self.freq_analysis_behaviour = [self.bh_no_linear] * len(ref_peaks_indexes)
+                if stain_mot_sat and not(mot_sat) : # has this test saturated?
+                    # if we have non-linear behaviour and no saturation, that is suspicious
+                    self.freq_analysis_behaviour = [self.bh_something_wrong] * len(ref_peaks_indexes)
                 break
+        # TODO --- if behaviour is OK iterate over remaining reference peaks and mark as filtering?
 
     def analyse_z(self):
         err_rel     = 0  # error normalized over setpoint
