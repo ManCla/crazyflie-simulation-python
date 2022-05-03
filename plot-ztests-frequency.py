@@ -72,10 +72,10 @@ if __name__ == "__main__":
         else :
             ax[plot_index].plot(data_storage.get_z_fft_freq(),\
                                    data_storage.get_z_ref_fft(),\
-                                   c=bh_color, linewidth=1)
+                                   linewidth=1)
             ax2.plot(data_storage.get_z_fft_freq(),\
                         data_storage.get_z_ref_fft(),\
-                        c=bh_color, linewidth=1)
+                        linewidth=1)
     x_max = 3
     y_max = 150000
     ax[0].set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
