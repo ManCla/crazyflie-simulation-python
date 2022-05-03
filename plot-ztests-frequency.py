@@ -77,7 +77,7 @@ if __name__ == "__main__":
                         data_storage.get_z_ref_fft(),\
                         c=bh_color, linewidth=1)
     x_max = 3
-    y_max = 120000
+    y_max = 150000
     ax[0].set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
     ax[1].set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
     ax[2].set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
