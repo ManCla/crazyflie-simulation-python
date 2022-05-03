@@ -12,6 +12,7 @@ class ZAnalysis(FlightDataHandler):
     bh_good_tracking   = 1
     bh_filtering       = 2
     bh_good_tracking_extra = 3 
+    bh_filtering_extra = 3
     bh_sat_no_tracking = 4
     bh_something_wrong = 5
     bh_no_linear       = 4
