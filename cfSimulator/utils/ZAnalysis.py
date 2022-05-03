@@ -67,14 +67,14 @@ class ZAnalysis(FlightDataHandler):
 
         ### PARAMETERS -- TODO should be defined elsewhere
         peak_threshold = 0.3 # percentage of maximum peak above which we look for more peaks
-        thrust_min = 20000 # saturation limits of motors
-        thrust_max = 65535 #
         dt     = 0.001     # sampling time in seconds
         settle = int(5/dt) # test  warm up time not used in analysis
         freq_diff_tolerance = 2 # maximum accepted difference in indexes over freq vector of peaks
         # number of samples of test trace length above which the drone
         # is considered to have hit the saturations
         stain_mot_sat = False # if you want to mark behaviour also according to motor saturation
+        thrust_min = 20000 # saturation limits of motors
+        thrust_max = 65535 #
         motors_saturated_threshold = int(0.05*self.trace_length)
         ### END PARAMETERS
 
