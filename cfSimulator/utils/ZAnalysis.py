@@ -65,6 +65,7 @@ class ZAnalysis(FlightDataHandler):
         # FREQ. DOM. ANALYSIS
 
         ### PARAMETERS -- TODO should be defined elsewhere
+        peak_threshold = 0.3 # percentage of maximum peak above which we look for more peaks
         dt     = 0.001     # sampling time in seconds
         settle = int(5/dt) # test  warm up time not used in analysis
         freq_diff_tolerance = 2 # maximum accepted difference in indexes over freq vector of peaks
@@ -90,17 +91,17 @@ class ZAnalysis(FlightDataHandler):
         # TODO --- define peak threshold only on the base of ref amplitude?
 
         # find peaks in reference spectrum
-        ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft, height=0.3*max(self.z_ref_fft))
+        ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft, height=peak_threshold*max(self.z_ref_fft))
         self.z_ref_freq_peaks = np.array(self.z_fft_freq)[ref_peaks_indexes]
         self.z_ref_amp_peaks  = np.array(self.z_ref_fft)[ref_peaks_indexes]
 
         # find peaks in output spectrum
-        pos_peaks_indexes, _  = signal.find_peaks(self.z_pos_fft, height=0.3*max(self.z_pos_fft))
+        pos_peaks_indexes, _  = signal.find_peaks(self.z_pos_fft, height=peak_threshold*max(self.z_pos_fft))
         self.z_pos_freq_peaks = np.array(self.z_fft_freq)[pos_peaks_indexes]
         self.z_pos_amp_peaks  = np.array(self.z_pos_fft)[pos_peaks_indexes]
 
         # find peaks in error spectrum
-        err_peaks_indexes, _  = signal.find_peaks(self.z_err_fft, height=0.3*max(self.z_err_fft))
+        err_peaks_indexes, _  = signal.find_peaks(self.z_err_fft, height=peak_threshold*max(self.z_err_fft))
         self.z_err_freq_peaks = np.array(self.z_fft_freq)[err_peaks_indexes]
         self.z_err_amp_peaks  = np.array(self.z_err_fft)[err_peaks_indexes]
 
