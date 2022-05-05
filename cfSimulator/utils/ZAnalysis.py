@@ -123,10 +123,10 @@ class ZAnalysis(FlightDataHandler):
         # iterate over frequency of peaks of position spectrum
         for pp_idx in pos_peaks_indexes :
             # look for same peak in reference spectrum peaks
-            find_pos_peak = [abs(x-pp_idx)<freq_diff_tolerance for x in ref_peaks_indexes]
-            if any(find_pos_peak) :
+            find_ref_peak = [abs(x-pp_idx)<freq_diff_tolerance for x in ref_peaks_indexes]
+            if any(find_ref_peak) :
                 # peak was found, define type {ref_tracking, filtering}
-                idx = find_pos_peak.index(True)
+                idx = find_ref_peak.index(True)
                 if self.z_pos_fft[ref_peaks_indexes[idx]]>self.z_err_fft[ref_peaks_indexes[idx]]:
                     self.freq_analysis_behaviour[idx] = self.bh_good_tracking
                     if stain_mot_sat and mot_sat : # has this test saturated?
