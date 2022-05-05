@@ -9,7 +9,6 @@ TODO: write class description
 '''
 
 base_period = 10
-base_amplitude = 1
 
 class zShapes():
     
@@ -60,7 +59,7 @@ class zShapes():
         if (t % base_period) < base_period/2 :        # if we are in first half of the period
             return 0
         else :                                        # if we are in second half of the period
-            return base_amplitude
+            return 1
 
     def triangular(self, t):
         if (t % base_period) < base_period/2 :        # if we are in first half of the period
