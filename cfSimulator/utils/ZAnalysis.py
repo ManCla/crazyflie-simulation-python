@@ -115,7 +115,7 @@ class ZAnalysis(FlightDataHandler):
         self.z_err_freq_peaks = np.array(self.z_fft_freq)[err_peaks_indexes]
         self.z_err_amp_peaks  = np.array(self.z_err_fft)[err_peaks_indexes]
 
-        # determine behaviour
+        ### BEHAVIOUR DETECTION ###
         self.freq_analysis_behaviour = [self.bh_undefined] * len(ref_peaks_indexes)
         # detect motor saturation
         mot_sat = sum([(x==thrust_min or x==thrust_max) for x in self.u[0,settle:self.trace_length]])\
@@ -142,7 +142,14 @@ class ZAnalysis(FlightDataHandler):
                     # if we have non-linear behaviour and no saturation, that is suspicious
                     self.freq_analysis_behaviour = [self.bh_something_wrong] * len(ref_peaks_indexes)
                 break
-        # TODO --- if behaviour is OK iterate over remaining reference peaks and mark as filtering?
+        # if behaviour is OK iterate over remaining reference peaks 
+        # and mark as filtering
+        if self.freq_analysis_behaviour[0] != self.bh_no_linear:
+            for rp_idx in ref_peaks_indexes :
+                find_pos_peak = [abs(x-rp_idx)<freq_diff_tolerance for x in pos_peaks_indexes]
+                if not(any(find_pos_peak)) :
+                    idx = np.where(ref_peaks_indexes==rp_idx)[0][0]
+                    self.freq_analysis_behaviour[idx] = self.bh_filtering
 
     def analyse_z(self):
         err_rel     = 0  # error normalized over setpoint
