@@ -79,7 +79,7 @@ class ZAnalysis(FlightDataHandler):
         ### END PARAMETERS
 
         # detrend signals (otherwise 0-freq component hides everything)
-        # TODO --- try without detrend
+        # TODO --- try without detrend (note that signal.find_peak seems to avoid the 0Hz peak anyway)
         z_err_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length]\
                                         -self.pos[2,:][settle:self.trace_length],type='constant')
         z_ref_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length],type='constant')
@@ -97,6 +97,8 @@ class ZAnalysis(FlightDataHandler):
         self.z_fft_freq = z_fft_freq[:len(z_fft_freq)//2]
 
         # TODO --- define peak threshold only on the base of ref amplitude?
+        #      --- in general should investigate better how to do this:
+        #      --- see the problem for low freq tests and triangular wave and threshold at 0.1
 
         # find peaks in reference spectrum
         ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft, height=peak_threshold*max(self.z_ref_fft))
