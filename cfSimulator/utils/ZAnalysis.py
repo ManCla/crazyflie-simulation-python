@@ -31,11 +31,11 @@ class ZAnalysis(FlightDataHandler):
         fig, axs = plt.subplots(1, 1, figsize=self.chosen_size)
         plt.subplots_adjust(wspace=0.2, hspace=1)
         min_freq_plot = 0
-        max_freq_plot = 6
+        max_freq_plot = 3
         axs.title.set_text('Frequency spectrum of z reference and z position')
-        axs.plot(self.z_fft_freq, self.z_ref_fft, 'k')
-        axs.plot(self.z_fft_freq, self.z_pos_fft, 'red')
-        axs.plot(self.z_fft_freq, self.z_err_fft, 'green')
+        axs.scatter(self.z_fft_freq, self.z_ref_fft, color='k', s=5)
+        axs.scatter(self.z_fft_freq, self.z_pos_fft, color='red', s=5)
+        axs.scatter(self.z_fft_freq, self.z_err_fft, color='green', s=5)
         axs.plot(self.z_ref_freq_peaks, self.z_ref_amp_peaks,"x", color='k')
         axs.plot(self.z_pos_freq_peaks, self.z_pos_amp_peaks,"x", color='red')
         axs.plot(self.z_err_freq_peaks, self.z_err_amp_peaks,"x", color='green')
