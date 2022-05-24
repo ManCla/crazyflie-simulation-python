@@ -4,7 +4,7 @@ import numpy as np
 Class that generates general test cases according to...
 TODO: write class description
  - base period for shape functions is 10 seconds
- - base amplitude range for shape functions is [0,1]
+ - base amplitude range (max-min) for shape functions is [0,1]
  - avoid discontinuity at beginning of shape (after warm up)
 To add a new shape:
  - add shape name to list
@@ -17,7 +17,7 @@ base_period = 10
 class zShapes():
     
     # list of available shapes
-    shapes = ['steps', 'trapezoidal', 'triangular','sinus']
+    shapes = ['steps', 'trapezoidal', 'triangular','sinus','ud1']
 
     def __init__(self, shape, amplitude, time, offset, settle):
         
@@ -51,6 +51,8 @@ class zShapes():
             shape_term = self.triangular(t_scaled)
         elif self.shape=='sinus' :
             shape_term = self.sinus(t_scaled)
+        elif self.shape=='ud1' :
+            shape_term = self.ud1(t_scaled)
 
         z = self.offset + self.amplitude * shape_term # apply offset and scaling
         return np.array([0,0,z])
@@ -85,4 +87,15 @@ class zShapes():
 
     def sinus(self, t):
         # make sinus start from 270 degrees so that we avoid discontinuities in reference
-        return 1+np.sin((np.pi*3/2)+((t % base_period)/base_period)*2*np.pi)
+        # amplitude is 0.5 because we want max-min=1
+        return 0.5+0.5*np.sin((np.pi*3/2)+((t % base_period)/base_period)*2*np.pi)
+
+    def ud1(self,t):
+        percentage_period = (t % base_period) / base_period
+        if percentage_period<=0.25 :
+            return (percentage_period)/0.25
+        if percentage_period<=0.5  :
+            return 0.5+((percentage_period-0.25) % 0.05)*10
+        if percentage_period<=0.65 :
+            return 0.5
+        return 0.5+0.5*np.sin(((percentage_period-0.15) % 1)*4*np.pi)
