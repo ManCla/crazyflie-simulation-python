@@ -6,6 +6,10 @@ TODO: write class description
  - base period for shape functions is 10 seconds
  - base amplitude range for shape functions is [0,1]
  - avoid discontinuity at beginning of shape (after warm up)
+To add a new shape:
+ - add shape name to list
+ - write utility function that creates pattern over a standard time of 10s
+ - add elif selection in refGen function that calls the function above
 '''
 
 base_period = 10
@@ -54,6 +58,7 @@ class zShapes():
     #######################
     ### SHAPE FUNCTIONS ###
     #######################
+    # cannot pre-generate vector because we cannot know a priori the sampling
 
     def steps(self, t):
         if (t % base_period) < base_period/2 :        # if we are in first half of the period
