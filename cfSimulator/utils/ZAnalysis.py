@@ -86,10 +86,10 @@ class ZAnalysis(FlightDataHandler):
         z_pos_detrended = signal.detrend(self.pos[2,:][settle:self.trace_length],type='constant')
         z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
 
-        # fft computation
-        z_err_fft  = list(map(abs, fft.fft(z_err_detrended)))
-        z_ref_fft  = list(map(abs, fft.fft(z_ref_detrended)))
-        z_pos_fft  = list(map(abs, fft.fft(z_pos_detrended)))
+        # fft computation - can use overwrite_x=True to improve mem efficiency
+        z_err_fft  = list(map(abs, fft.fft(z_err_detrended, norm="forward", workers=-1)))
+        z_ref_fft  = list(map(abs, fft.fft(z_ref_detrended, norm="forward", workers=-1)))
+        z_pos_fft  = list(map(abs, fft.fft(z_pos_detrended, norm="forward", workers=-1)))
         # spectrum is symmetric
         self.z_err_fft = z_err_fft[:len(z_err_fft)//2]
         self.z_ref_fft = z_ref_fft[:len(z_ref_fft)//2]
