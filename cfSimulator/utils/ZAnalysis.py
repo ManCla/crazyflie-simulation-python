@@ -76,6 +76,7 @@ class ZAnalysis(FlightDataHandler):
         thrust_min = 20000 # saturation limits of motors
         thrust_max = 65535 #
         motors_saturated_threshold = int(0.05*self.trace_length)
+        # TODO --- add staining of tests that hit the ground
         ### END PARAMETERS
 
         z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
@@ -124,6 +125,8 @@ class ZAnalysis(FlightDataHandler):
         mot_sat = sum([(x==thrust_min or x==thrust_max) for x in self.u[0,settle:self.trace_length]])\
                   >motors_saturated_threshold
         # iterate over frequency of peaks of position spectrum
+        ## TO address non periodic signals you just want to iterate over each point of the frequency spectrum.
+        ## TODO try that
         for pp_idx in pos_peaks_indexes :
             # look for same peak in reference spectrum peaks
             find_ref_peak = [abs(x-pp_idx)<freq_diff_tolerance for x in ref_peaks_indexes]
