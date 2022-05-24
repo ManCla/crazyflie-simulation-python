@@ -76,12 +76,13 @@ if __name__ == "__main__":
             ax2.plot(data_storage.get_z_fft_freq(),\
                         data_storage.get_z_ref_fft(),\
                         linewidth=1)
+    x_min = -0.1
     x_max = 3
-    y_max = 3
-    ax[0].set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
-    ax[1].set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
-    ax[2].set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
-    ax[3].set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
+    y_max = 6
+    ax[0].set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
+    ax[1].set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
+    ax[2].set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
+    ax[3].set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
     ax[0].set_ylim([0, y_max])
     ax[1].set_ylim([0, y_max])
     ax[2].set_ylim([0, y_max])
@@ -90,7 +91,7 @@ if __name__ == "__main__":
     ax[1].title.set_text("triangular")
     ax[2].title.set_text("trapezoidal")
     ax[3].title.set_text("sinus")
-    ax2.set_xlim([0, x_max]) # spectrum above 1Hz seems to be basically zero
+    ax2.set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
     ax2.set_ylim([0, y_max])
     ax2.title.set_text("All tests together")
     plt.show()

@@ -78,18 +78,16 @@ class ZAnalysis(FlightDataHandler):
         motors_saturated_threshold = int(0.05*self.trace_length)
         ### END PARAMETERS
 
-        # detrend signals (otherwise 0-freq component hides everything)
-        # TODO --- try without detrend (note that signal.find_peak seems to avoid the 0Hz peak anyway)
-        z_err_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length]\
-                                        -self.pos[2,:][settle:self.trace_length],type='constant')
-        z_ref_detrended = signal.detrend(self.set_pt[2,settle:self.trace_length],type='constant')
-        z_pos_detrended = signal.detrend(self.pos[2,:][settle:self.trace_length],type='constant')
         z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
 
-        # fft computation - can use overwrite_x=True to improve mem efficiency
-        z_err_fft  = list(map(abs, fft.fft(z_err_detrended, norm="forward", workers=-1)))
-        z_ref_fft  = list(map(abs, fft.fft(z_ref_detrended, norm="forward", workers=-1)))
-        z_pos_fft  = list(map(abs, fft.fft(z_pos_detrended, norm="forward", workers=-1)))
+        # fft computation
+        z_err_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:self.trace_length]\
+                                           -self.pos[2,:][settle:self.trace_length],\
+                                           norm="forward", workers=-1)))
+        z_ref_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:self.trace_length],\
+                                           norm="forward", workers=-1)))
+        z_pos_fft  = list(map(abs, fft.fft(self.pos[2,:][settle:self.trace_length],\
+                                           norm="forward", workers=-1)))
         # spectrum is symmetric
         self.z_err_fft = z_err_fft[:len(z_err_fft)//2]
         self.z_ref_fft = z_ref_fft[:len(z_ref_fft)//2]
@@ -100,18 +98,23 @@ class ZAnalysis(FlightDataHandler):
         #      --- in general should investigate better how to do this:
         #      --- see the problem for low freq tests and triangular wave and threshold at 0.1
 
-        # find peaks in reference spectrum
-        ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft, height=peak_threshold*max(self.z_ref_fft))
+        # find peaks in reference spectrum 
+        # peak at zero frequency is included manually because it is always important
+        # but also always excluded by find_peaks.
+        ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft, height=peak_threshold*max(self.z_ref_fft[1:]))
+        ref_peaks_indexes = np.hstack(([0],ref_peaks_indexes))
         self.z_ref_freq_peaks = np.array(self.z_fft_freq)[ref_peaks_indexes]
         self.z_ref_amp_peaks  = np.array(self.z_ref_fft)[ref_peaks_indexes]
 
         # find peaks in output spectrum
-        pos_peaks_indexes, _  = signal.find_peaks(self.z_pos_fft, height=peak_threshold*max(self.z_pos_fft))
+        pos_peaks_indexes, _  = signal.find_peaks(self.z_pos_fft, height=peak_threshold*max(self.z_pos_fft[1:]))
+        pos_peaks_indexes = np.hstack(([0],pos_peaks_indexes))
         self.z_pos_freq_peaks = np.array(self.z_fft_freq)[pos_peaks_indexes]
         self.z_pos_amp_peaks  = np.array(self.z_pos_fft)[pos_peaks_indexes]
 
         # find peaks in error spectrum
-        err_peaks_indexes, _  = signal.find_peaks(self.z_err_fft, height=peak_threshold*max(self.z_err_fft))
+        err_peaks_indexes, _  = signal.find_peaks(self.z_err_fft, height=peak_threshold*max(self.z_err_fft[1:]))
+        err_peaks_indexes = np.hstack(([0],err_peaks_indexes))
         self.z_err_freq_peaks = np.array(self.z_fft_freq)[err_peaks_indexes]
         self.z_err_amp_peaks  = np.array(self.z_err_fft)[err_peaks_indexes]
 
