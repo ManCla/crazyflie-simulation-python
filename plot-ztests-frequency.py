@@ -59,6 +59,8 @@ if __name__ == "__main__":
             plot_index = 2
         elif data_storage.test=="sinus" :
             plot_index = 3
+        else :
+            print("Shape not recognized {}".format(data_storage.test))
 
         # actual plotting for each test
         bh_color=fdh.bh_palette[data_storage.get_behaviour()]/255
@@ -77,12 +79,12 @@ if __name__ == "__main__":
                         data_storage.get_z_ref_fft(),\
                         linewidth=1)
     x_min = -0.1
-    x_max = 3
+    x_max = 2.5 # spectrum above 1Hz seems to be basically zero
     y_max = 6
-    ax[0].set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
-    ax[1].set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
-    ax[2].set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
-    ax[3].set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
+    ax[0].set_xlim([x_min, x_max])
+    ax[1].set_xlim([x_min, x_max])
+    ax[2].set_xlim([x_min, x_max])
+    ax[3].set_xlim([x_min, x_max])
     ax[0].set_ylim([0, y_max])
     ax[1].set_ylim([0, y_max])
     ax[2].set_ylim([0, y_max])
