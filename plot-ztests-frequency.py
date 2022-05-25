@@ -63,7 +63,8 @@ if __name__ == "__main__":
         elif data_storage.test=="ud1" :
             plot_index = 4
         else :
-            print("Shape not recognized {}".format(data_storage.test))
+            print("ERROR: Shape not recognized {}".format(data_storage.test))
+            exit()
 
         # actual plotting for each test
         bh_color=fdh.bh_palette[data_storage.get_behaviour()]/255
