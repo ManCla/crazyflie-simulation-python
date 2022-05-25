@@ -79,6 +79,13 @@ class ZAnalysis(FlightDataHandler):
         # TODO --- add staining of tests that hit the ground
         ### END PARAMETERS
 
+        # apply fft to a given number of periods
+        # this can be used to test the effect of considering test durations defined by the 
+        # number of repetitions rather than the absolute time
+        time_coef = float(self.data_location.split('-')[-1]) # get duration of a single period
+        num_periods_spectrum = -1 # number of periods of the input to be used for dft (max = (60-5)*time_coef/10)
+        if num_periods_spectrum > 0 :
+            self.trace_length = settle + num_periods_spectrum*int((10/time_coef)/dt)
         z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
 
         # fft computation
