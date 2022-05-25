@@ -162,7 +162,7 @@ class ZAnalysis(FlightDataHandler):
         # and mark as filtering
         if self.freq_analysis_behaviour[0] != self.bh_no_linear:
             for rp_idx in ref_peaks_indexes :
-                find_pos_peak = [abs(x-rp_idx)<freq_diff_tolerance for x in pos_peaks_indexes]
+                find_pos_peak = [abs(x-rp_idx)<=freq_diff_tolerance for x in pos_peaks_indexes]
                 if not(any(find_pos_peak)) :
                     idx = np.where(ref_peaks_indexes==rp_idx)[0][0]
                     self.freq_analysis_behaviour[idx] = self.bh_filtering
