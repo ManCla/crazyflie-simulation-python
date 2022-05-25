@@ -75,6 +75,7 @@ class ZAnalysis(FlightDataHandler):
         stain_mot_sat = False # if you want to mark behaviour also according to motor saturation
         thrust_min = 20000 # saturation limits of motors
         thrust_max = 65535 #
+        base_hover = 1
         ### END PARAMETERS
 
         # apply fft to a given number of periods
@@ -95,9 +96,9 @@ class ZAnalysis(FlightDataHandler):
         z_err_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis]\
                                            -self.pos[2,:][settle:end_analysis],\
                                            norm="forward", workers=-1)))
-        z_ref_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis],\
+        z_ref_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis]-base_hover,\
                                            norm="forward", workers=-1)))
-        z_pos_fft  = list(map(abs, fft.fft(self.pos[2,:][settle:end_analysis],\
+        z_pos_fft  = list(map(abs, fft.fft(self.pos[2,:][settle:end_analysis]-base_hover,\
                                            norm="forward", workers=-1)))
         # spectrum is symmetric
         self.z_err_fft = z_err_fft[:len(z_err_fft)//2]
