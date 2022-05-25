@@ -85,16 +85,21 @@ class ZAnalysis(FlightDataHandler):
         time_coef = float(self.data_location.split('-')[-1]) # get duration of a single period
         num_periods_spectrum = -1 # number of periods of the input to be used for dft (max = (60-5)*time_coef/10)
         if num_periods_spectrum > 0 :
-            self.trace_length = settle + num_periods_spectrum*int((10/time_coef)/dt)
-        z_fft_freq = fft.fftfreq((self.trace_length-settle), d=dt)
+            end_analysis = settle + num_periods_spectrum*int((10/time_coef)/dt)
+            if end_analysis>self.trace_length :
+                print("Trying to analyse more periods than we have, you will need longer tests")
+                exit()
+        else :
+            end_analysis = self.trace_length
+        z_fft_freq = fft.fftfreq((end_analysis-settle), d=dt)
 
-        # fft computation
-        z_err_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:self.trace_length]\
-                                           -self.pos[2,:][settle:self.trace_length],\
+        # fft computation and extract module
+        z_err_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis]\
+                                           -self.pos[2,:][settle:end_analysis],\
                                            norm="forward", workers=-1)))
-        z_ref_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:self.trace_length],\
+        z_ref_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis],\
                                            norm="forward", workers=-1)))
-        z_pos_fft  = list(map(abs, fft.fft(self.pos[2,:][settle:self.trace_length],\
+        z_pos_fft  = list(map(abs, fft.fft(self.pos[2,:][settle:end_analysis],\
                                            norm="forward", workers=-1)))
         # spectrum is symmetric
         self.z_err_fft = z_err_fft[:len(z_err_fft)//2]
