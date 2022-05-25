@@ -69,7 +69,7 @@ class ZAnalysis(FlightDataHandler):
         peak_threshold = 0.3 # percentage of maximum peak above which we look for more peaks
         dt     = 0.001     # sampling time in seconds
         settle = int(5/dt) # test  warm up time not used in analysis
-        freq_diff_tolerance = 2 # maximum accepted difference in indexes over freq vector of peaks
+        freq_diff_tolerance = 1 # maximum accepted difference in indexes over freq vector of peaks
         # number of samples of test trace length above which the drone
         # is considered to have hit the saturations
         stain_mot_sat = False # if you want to mark behaviour also according to motor saturation
@@ -137,7 +137,7 @@ class ZAnalysis(FlightDataHandler):
         ## TODO: try that
         for pp_idx in pos_peaks_indexes :
             # look for same peak in reference spectrum peaks
-            find_ref_peak = [abs(x-pp_idx)<freq_diff_tolerance for x in ref_peaks_indexes]
+            find_ref_peak = [abs(x-pp_idx)<=freq_diff_tolerance for x in ref_peaks_indexes]
             if any(find_ref_peak) :
                 # peak was found, define type {ref_tracking, filtering}
                 idx = find_ref_peak.index(True)
