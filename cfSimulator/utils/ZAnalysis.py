@@ -84,8 +84,10 @@ class ZAnalysis(FlightDataHandler):
         # apply fft to a given number of periods
         # this can be used to test the effect of considering test durations defined by the 
         # number of repetitions rather than the absolute time
+        # TODO: since the number of periods will be the metric to define test duration
+        #       it will come included in the test duration. Move it to test definition.
         time_coef = float(self.data_location.split('-')[-1]) # get duration of a single period
-        num_periods_spectrum = -1 # number of periods of the input to be used for dft (max = (60-5)*time_coef/10)
+        num_periods_spectrum = 5 # number of periods of the input to be used for dft (max = (60-5)*time_coef/10)
         if num_periods_spectrum > 0 :
             end_analysis = settle + num_periods_spectrum*int((10/time_coef)/dt)
             if end_analysis>self.trace_length :
