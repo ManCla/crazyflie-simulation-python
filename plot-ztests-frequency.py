@@ -22,7 +22,7 @@ if __name__ == "__main__":
     
     ### generate plotting objects
     # figure with separated different types of tests
-    fig1, ax  = plt.subplots(4, 1)
+    fig1, ax  = plt.subplots(5, 1)
     plt.subplots_adjust(wspace=0.2, hspace=1)
     plt.setp(ax,xlabel=x_label,ylabel=y_label)
     # TODO --- do not hardcode this but rather take this from the z-test-set file
@@ -59,6 +59,8 @@ if __name__ == "__main__":
             plot_index = 2
         elif data_storage.test=="sinus" :
             plot_index = 3
+        elif data_storage.test=="ud1" :
+            plot_index = 4
         else :
             print("Shape not recognized {}".format(data_storage.test))
 
@@ -85,14 +87,17 @@ if __name__ == "__main__":
     ax[1].set_xlim([x_min, x_max])
     ax[2].set_xlim([x_min, x_max])
     ax[3].set_xlim([x_min, x_max])
+    ax[4].set_xlim([x_min, x_max])
     ax[0].set_ylim([0, y_max])
     ax[1].set_ylim([0, y_max])
     ax[2].set_ylim([0, y_max])
     ax[3].set_ylim([0, y_max])
+    ax[4].set_ylim([0, y_max])
     ax[0].title.set_text("steps")
     ax[1].title.set_text("triangular")
     ax[2].title.set_text("trapezoidal")
     ax[3].title.set_text("sinus")
+    ax[4].title.set_text("user-defined")
     ax2.set_xlim([x_min, x_max]) # spectrum above 1Hz seems to be basically zero
     ax2.set_ylim([0, y_max])
     ax2.title.set_text("All tests together")
