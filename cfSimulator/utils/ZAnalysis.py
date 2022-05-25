@@ -47,6 +47,9 @@ class ZAnalysis(FlightDataHandler):
     ### function to generate and show all plots available
     ### Override parent method to plot also z loop frequency spectrum
     def show_all(self):
+        print("Motor saturation percentage: {:.2f}".format(self.get_motors_saturated()))
+        print("Hit ground percentage: {:.2f}".format(self.get_hit_ground()))
+        print("Detected behaviour is: {}".format(self.get_behaviour()))
         self.positionSpeedPlot()
         self.z_loop_frequency_plot()
         plt.show()
@@ -75,7 +78,7 @@ class ZAnalysis(FlightDataHandler):
         stain_mot_sat = False # if you want to mark behaviour also according to motor saturation
         thrust_min = 20000 # saturation limits of motors
         thrust_max = 65535 #
-        base_hover = 1
+        base_hover = 1 # removed from the reference and position to study only effect of repeated shape
         ### END PARAMETERS
 
         # apply fft to a given number of periods
@@ -86,8 +89,7 @@ class ZAnalysis(FlightDataHandler):
         if num_periods_spectrum > 0 :
             end_analysis = settle + num_periods_spectrum*int((10/time_coef)/dt)
             if end_analysis>self.trace_length :
-                print("Trying to analyse more periods than we have, you will need longer tests")
-                exit()
+                print("Trying to analyse more periods than we have, {} is too short so I will skip it".format(self.data_location))
         else :
             end_analysis = self.trace_length
         z_fft_freq = fft.fftfreq((end_analysis-settle), d=dt)
@@ -177,8 +179,6 @@ class ZAnalysis(FlightDataHandler):
                                            /(self.trace_length-settle)
         self.hit_ground_percentage = sum( x<0.01 for x in self.pos[2,settle:self.trace_length] )\
                                      /(self.trace_length-settle)
-        print("motor sat"+str(self.motors_saturated_percentage))
-        print("hit ground"+str(self.hit_ground_percentage))
 
     #####################
     ### GET FUNCTIONS ###
