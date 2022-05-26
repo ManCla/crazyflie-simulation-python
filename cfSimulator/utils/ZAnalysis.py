@@ -50,6 +50,7 @@ class ZAnalysis(FlightDataHandler):
         print("Motor saturation percentage: {:.2f}".format(self.get_motors_saturated()))
         print("Hit ground percentage: {:.2f}".format(self.get_hit_ground()))
         print("Detected behaviour is: {}".format(self.get_behaviour()))
+        print("Degree of non-linearity is: {}".format(self.get_z_non_linear_degree()))
         self.positionSpeedPlot()
         self.z_loop_frequency_plot()
         plt.show()
@@ -73,11 +74,6 @@ class ZAnalysis(FlightDataHandler):
         dt     = 0.001     # sampling time in seconds
         settle = int(5/dt) # test  warm up time not used in analysis
         freq_diff_tolerance = 1 # maximum accepted difference in indexes over freq vector of peaks
-        # number of samples of test trace length above which the drone
-        # is considered to have hit the saturations
-        stain_mot_sat = False # if you want to mark behaviour also according to motor saturation
-        thrust_min = 20000 # saturation limits of motors
-        thrust_max = 65535 #
         base_hover = 1 # removed from the reference and position to study only effect of repeated shape
         ### END PARAMETERS
 
@@ -91,7 +87,8 @@ class ZAnalysis(FlightDataHandler):
         if num_periods_spectrum > 0 :
             end_analysis = settle + num_periods_spectrum*int((10/time_coef)/dt)
             if end_analysis>self.trace_length :
-                print("Trying to analyse more periods than we have, {} is too short so I will skip it".format(self.data_location))
+                print("Trying to analyse more periods than we have, {} I will use what I have".format(self.data_location))
+                end_analysis = self.trace_length
         else :
             end_analysis = self.trace_length
         z_fft_freq = fft.fftfreq((end_analysis-settle), d=dt)
@@ -135,10 +132,9 @@ class ZAnalysis(FlightDataHandler):
         self.z_err_amp_peaks  = np.array(self.z_err_fft)[err_peaks_indexes]
 
         ### BEHAVIOUR DETECTION ###
-        self.freq_analysis_behaviour = [self.bh_undefined] * len(ref_peaks_indexes)
+        self.freq_analysis_bin_behaviour = [self.bh_undefined] * len(ref_peaks_indexes)
+        self.z_non_linear_degree = 0
         # iterate over frequency of peaks of position spectrum
-        ## to address non periodic signals you just want to iterate over each point of the frequency spectrum.
-        ## TODO: try that
         for pp_idx in pos_peaks_indexes :
             # look for same peak in reference spectrum peaks
             find_ref_peak = [abs(x-pp_idx)<=freq_diff_tolerance for x in ref_peaks_indexes]
@@ -146,28 +142,21 @@ class ZAnalysis(FlightDataHandler):
                 # peak was found, define type {ref_tracking, filtering}
                 idx = find_ref_peak.index(True)
                 if self.z_pos_fft[ref_peaks_indexes[idx]]>self.z_err_fft[ref_peaks_indexes[idx]]:
-                    self.freq_analysis_behaviour[idx] = self.bh_good_tracking
-                    if stain_mot_sat and mot_sat : # has this test saturated?
-                        self.freq_analysis_behaviour[idx] = self.bh_good_tracking_extra
+                    self.freq_analysis_bin_behaviour[idx] = self.bh_good_tracking
                 else :
-                    self.freq_analysis_behaviour[idx] = self.bh_filtering
-                    if stain_mot_sat and mot_sat : # has this test saturated?
-                        self.freq_analysis_behaviour[idx] = self.bh_filtering_extra
+                    self.freq_analysis_bin_behaviour[idx] = self.bh_filtering
             else :
                 # peak was not found: non-linear behaviour detected, mark all input frequencies
-                self.freq_analysis_behaviour = [self.bh_no_linear] * len(ref_peaks_indexes)
-                if stain_mot_sat and not(mot_sat) : # has this test saturated?
-                    # if we have non-linear behaviour and no saturation, that is suspicious
-                    self.freq_analysis_behaviour = [self.bh_something_wrong] * len(ref_peaks_indexes)
-                break
+                self.freq_analysis_bin_behaviour = [self.bh_no_linear] * len(ref_peaks_indexes) # binary detection
+                self.z_non_linear_degree = min(1,self.z_non_linear_degree + self.z_pos_fft[pp_idx]/max(self.z_ref_fft[1:])) # gradual detection
         # if behaviour is OK iterate over remaining reference peaks 
         # and mark as filtering
-        if self.freq_analysis_behaviour[0] != self.bh_no_linear:
+        if self.freq_analysis_bin_behaviour[0] != self.bh_no_linear:
             for rp_idx in ref_peaks_indexes :
                 find_pos_peak = [abs(x-rp_idx)<=freq_diff_tolerance for x in pos_peaks_indexes]
                 if not(any(find_pos_peak)) :
                     idx = np.where(ref_peaks_indexes==rp_idx)[0][0]
-                    self.freq_analysis_behaviour[idx] = self.bh_filtering
+                    self.freq_analysis_bin_behaviour[idx] = self.bh_filtering
 
     def analyse_z_sat_and_ground(self):
         ### PARAMETERS -- TODO should be defined elsewhere
@@ -197,9 +186,9 @@ class ZAnalysis(FlightDataHandler):
         return self.hit_ground_percentage
 
     def get_behaviour(self):
-        if not(hasattr(self, "behaviour")):
+        if not(hasattr(self, "freq_analysis_bin_behaviour")):
             self.freq_behaviour_z()
-        return self.freq_analysis_behaviour
+        return self.freq_analysis_bin_behaviour
 
     def get_z_fft_freq(self):
         if not(hasattr(self, "z_fft_freq")):
@@ -225,3 +214,8 @@ class ZAnalysis(FlightDataHandler):
         if not(hasattr(self, "z_ref_amp_peaks")):
             self.freq_behaviour_z()
         return self.z_ref_amp_peaks
+
+    def get_z_non_linear_degree(self):
+        if not(hasattr(self, "z_non_linear_degree")):
+            self.freq_behaviour_z()
+        return self.z_non_linear_degree
