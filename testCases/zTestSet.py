@@ -12,12 +12,11 @@ To add a new shape:
  - add elif selection in refGen function that calls the function above
 '''
 
-base_period = 10
-
 class zShapes():
     
     # list of available shapes
     shapes = ['steps', 'trapezoidal', 'triangular','sinus','ud1']
+    base_period = 10
 
     def __init__(self, shape, amplitude, time, offset, settle):
         
@@ -63,35 +62,35 @@ class zShapes():
     # cannot pre-generate vector because we cannot know a priori the sampling
 
     def steps(self, t):
-        if (t % base_period) < base_period/2 :        # if we are in first half of the period
+        if (t % self.base_period) < self.base_period/2 :        # if we are in first half of the period
             return 0
         else :                                        # if we are in second half of the period
             return 1
 
     def triangular(self, t):
-        if (t % base_period) < base_period/2 :        # if we are in first half of the period
-            return (t % base_period)/(base_period/2)
+        if (t % self.base_period) < self.base_period/2 :        # if we are in first half of the period
+            return (t % self.base_period)/(self.base_period/2)
         else :                                        # if we are in second half of the period
-            return 1-((t-base_period/2) % base_period)/(base_period/2)
+            return 1-((t-self.base_period/2) % self.base_period)/(self.base_period/2)
 
     def trapezoidal(self, t):
-        if (t % base_period) < base_period/4 :
+        if (t % self.base_period) < self.base_period/4 :
             # if we are in first quarter of the period
-            return (t % base_period)/(base_period/4)
-        elif ((t % base_period) > base_period/4)   and ((t % base_period) < base_period/2) :
+            return (t % self.base_period)/(self.base_period/4)
+        elif ((t % self.base_period) > self.base_period/4)   and ((t % self.base_period) < self.base_period/2) :
             return 1
-        elif ((t % base_period) > base_period/2)   and ((t % base_period) < base_period*3/4) :
-            return 1-((t-base_period/2) % base_period)/(base_period/4)
+        elif ((t % self.base_period) > self.base_period/2)   and ((t % self.base_period) < self.base_period*3/4) :
+            return 1-((t-self.base_period/2) % self.base_period)/(self.base_period/4)
         else :
             return 0
 
     def sinus(self, t):
         # make sinus start from 270 degrees so that we avoid discontinuities in reference
         # amplitude is 0.5 because we want max-min=1
-        return 0.5+0.5*np.sin((np.pi*3/2)+((t % base_period)/base_period)*2*np.pi)
+        return 0.5+0.5*np.sin((np.pi*3/2)+((t % self.base_period)/self.base_period)*2*np.pi)
 
     def ud1(self,t):
-        percentage_period = (t % base_period) / base_period
+        percentage_period = (t % self.base_period) / self.base_period
         if percentage_period<=0.25 :
             return (percentage_period)/0.25
         if percentage_period<=0.5  :

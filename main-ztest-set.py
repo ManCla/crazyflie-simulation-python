@@ -26,9 +26,10 @@ z_test_directory    = 'z-test-set'
 #######################
 
 # Duration of test flight:
-# should be defined according to the desired resolution
-# on "frequency" axis
-duration  = 60
+# defined according to the desired resolution on "frequency" axis
+# which is given by the number of periods used
+min_duration  = 60
+min_periods = 5
 
 ### Shapes
 # get from the test shapes class the list of available
@@ -80,6 +81,8 @@ if __name__ == "__main__":
             ref = zShapes(s,a,t,offset,settle)
             sim = cfSimulation()
             start_test = time.perf_counter()
+            # duration of a test is at least 5 times the period of the repeated input
+            duration = max(min_duration, settle + min_periods*(zShapes.base_period/t))
             storeObj   = sim.run(ref, duration)  # actual test execution
             end_test   = time.perf_counter()
             print(" >> {} took {} seconds".format(file_name, str(end_test-start_test)))
