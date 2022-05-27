@@ -84,7 +84,7 @@ class ZAnalysis(FlightDataHandler):
         if num_periods_spectrum > 0 :
             self.end_analysis = settle + num_periods_spectrum*int((10/time_coef)/dt)
             if self.end_analysis>self.trace_length :
-                print("Trying to fft more periods than we have, {} I will use what I have".format(self.data_location))
+                print("TEST: {} Trying to fft too many periods: I will use what I have".format(self.data_location))
                 self.end_analysis = self.trace_length
         else :
             self.end_analysis = self.trace_length
@@ -112,7 +112,7 @@ class ZAnalysis(FlightDataHandler):
         self.z_pos_fft  = z_pos_fft[:len(z_pos_fft)//2]
 
         # find peaks in reference spectrum
-        peak_threshold = peak_threshold_percentage * max(self.z_ref_fft[1:]) # min value of peaks relative to reference
+        peak_threshold = peak_threshold_percentage * max(self.z_ref_fft[1:]) # min value of peaks relative to ref
         # zero frequency is always included because it is always important but also always excluded by find_peaks
         ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft, height= peak_threshold)
         ref_peaks_indexes     = np.hstack(([0],ref_peaks_indexes))
@@ -149,10 +149,10 @@ class ZAnalysis(FlightDataHandler):
     def analyse_z_sat_and_ground(self):
         if not(hasattr(self, "end_analysis")):
             self.compute_end_analysis()
-        self.motors_saturated_percentage = sum([(x==thrust_min or x==thrust_max) for x in self.u[0,settle:self.end_analysis]])\
-                                           /(self.end_analysis-settle)
-        self.hit_ground_percentage = sum( x<0.01 for x in self.pos[2,settle:self.end_analysis] )\
-                                     /(self.end_analysis-settle)
+        mot_sat_samples = sum([(x==thrust_min or x==thrust_max) for x in self.u[0,settle:self.end_analysis]])
+        self.motors_saturated_percentage = mot_sat_samples/(self.end_analysis-settle)
+        hit_ground_samples = sum(x<0.01 for x in self.pos[2,settle:self.end_analysis])
+        self.hit_ground_percentage = hit_ground_samples/(self.end_analysis-settle)
 
     #####################
     ### GET FUNCTIONS ###
