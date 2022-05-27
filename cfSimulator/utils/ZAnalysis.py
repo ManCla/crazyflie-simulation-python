@@ -31,7 +31,7 @@ class ZAnalysis(FlightDataHandler):
         fig, axs = plt.subplots(1, 1, figsize=self.chosen_size)
         plt.subplots_adjust(wspace=0.2, hspace=1)
         min_freq_plot = 0
-        max_freq_plot = 3
+        max_freq_plot = 10
         axs.title.set_text('Frequency spectrum of z reference and z position')
         axs.scatter(self.z_fft_freq, self.z_ref_fft, color='k', s=5)
         axs.scatter(self.z_fft_freq, self.z_pos_fft, color='red', s=5)
@@ -51,6 +51,7 @@ class ZAnalysis(FlightDataHandler):
         print("Hit ground percentage: {:.2f}".format(self.get_hit_ground()))
         print("Detected behaviour is: {}".format(self.get_behaviour()))
         print("Degree of non-linearity is: {}".format(self.get_z_non_linear_degree()))
+        print("Degree of filtering is: {}".format(self.get_z_filter_degree()))
         self.positionSpeedPlot()
         self.z_loop_frequency_plot()
         plt.show()
@@ -70,7 +71,7 @@ class ZAnalysis(FlightDataHandler):
         # FREQ. DOM. ANALYSIS
 
         ### PARAMETERS -- TODO should be defined elsewhere
-        peak_threshold = 0.3 # percentage of maximum peak above which we look for more peaks
+        peak_threshold = 0.05 # percentage of maximum peak above which we look for more peaks
         dt     = 0.001     # sampling time in seconds
         settle = int(5/dt) # test  warm up time not used in analysis
         freq_diff_tolerance = 1 # maximum accepted difference in indexes over freq vector of peaks
@@ -114,26 +115,39 @@ class ZAnalysis(FlightDataHandler):
         # find peaks in reference spectrum 
         # peak at zero frequency is included manually because it is always important
         # but also always excluded by find_peaks.
-        ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft, height=peak_threshold*max(self.z_ref_fft[1:]))
+        ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft,\
+                                                  height= peak_threshold*max(self.z_ref_fft[1:]))
         ref_peaks_indexes = np.hstack(([0],ref_peaks_indexes))
         self.z_ref_freq_peaks = np.array(self.z_fft_freq)[ref_peaks_indexes]
         self.z_ref_amp_peaks  = np.array(self.z_ref_fft)[ref_peaks_indexes]
 
         # find peaks in output spectrum
-        pos_peaks_indexes, _  = signal.find_peaks(self.z_pos_fft, height=peak_threshold*max(self.z_pos_fft[1:]))
+        pos_peaks_indexes, _  = signal.find_peaks(self.z_pos_fft,\
+                                                  height= peak_threshold*max(self.z_ref_fft[1:]))
         pos_peaks_indexes = np.hstack(([0],pos_peaks_indexes))
         self.z_pos_freq_peaks = np.array(self.z_fft_freq)[pos_peaks_indexes]
         self.z_pos_amp_peaks  = np.array(self.z_pos_fft)[pos_peaks_indexes]
 
         # find peaks in error spectrum
-        err_peaks_indexes, _  = signal.find_peaks(self.z_err_fft, height=peak_threshold*max(self.z_err_fft[1:]))
+        err_peaks_indexes, _  = signal.find_peaks(self.z_err_fft,\
+                                                  height= peak_threshold*max(self.z_ref_fft[1:]))
         err_peaks_indexes = np.hstack(([0],err_peaks_indexes))
         self.z_err_freq_peaks = np.array(self.z_fft_freq)[err_peaks_indexes]
         self.z_err_amp_peaks  = np.array(self.z_err_fft)[err_peaks_indexes]
 
         ### BEHAVIOUR DETECTION ###
+        # initialize behaviour variables
         self.freq_analysis_bin_behaviour = [self.bh_undefined] * len(ref_peaks_indexes)
         self.z_non_linear_degree = 0
+        self.z_filter_degree     = [0] * len(ref_peaks_indexes)
+
+        # iterate over reference peaks and measure filtering degree
+        # note that we are also doing it for the tests that show nonlinear behaviour
+        # it is up to the later steps to exclude those tests from the filtering analysis
+        for idx in range(len(ref_peaks_indexes)) :
+            rp_idx = ref_peaks_indexes[idx]
+            self.z_filter_degree[idx] = abs((self.z_pos_fft[rp_idx]/self.z_ref_fft[rp_idx])-1)
+
         # iterate over frequency of peaks of position spectrum
         for pp_idx in pos_peaks_indexes :
             # look for same peak in reference spectrum peaks
@@ -219,3 +233,8 @@ class ZAnalysis(FlightDataHandler):
         if not(hasattr(self, "z_non_linear_degree")):
             self.freq_behaviour_z()
         return self.z_non_linear_degree
+
+    def get_z_filter_degree(self):
+        if not(hasattr(self, "z_filter_degree")):
+            self.freq_behaviour_z()
+        return self.z_filter_degree
