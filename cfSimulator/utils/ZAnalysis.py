@@ -5,6 +5,19 @@ import scipy.signal as signal
 import scipy.fft as fft
 import matplotlib.pyplot as plt
 
+# number of input periods to be used for fft (negative value uses full trace)
+num_periods_spectrum = 5
+freq_diff_tolerance = 1 # maximum accepted difference in indexes over freq vector of peaks
+peak_threshold_percentage = 0.05 # percentage of max ref peak above which we look for more peaks in spectra
+
+### DRONE AND TEST PARAMETERS 
+# TODO: should be retrieved from test case and model
+dt     = 0.001     # sampling time in seconds
+settle = int(5/dt) # test  warm up time not used in analysis
+base_hover = 1     # removed from the reference and position to study only effect of repeated shape
+thrust_min = 20000 # saturation limits of motors
+thrust_max = 65535 # 
+
 class ZAnalysis(FlightDataHandler):
 
     # encoding of behaviours -- TODO: define as enum
@@ -35,13 +48,13 @@ class ZAnalysis(FlightDataHandler):
         axs.title.set_text('Frequency spectrum of z reference and z position')
         axs.scatter(self.z_fft_freq, self.z_ref_fft, color='k', s=5)
         axs.scatter(self.z_fft_freq, self.z_pos_fft, color='red', s=5)
-        axs.scatter(self.z_fft_freq, self.z_err_fft, color='green', s=5)
         axs.plot(self.z_ref_freq_peaks, self.z_ref_amp_peaks,"x", color='k')
         axs.plot(self.z_pos_freq_peaks, self.z_pos_amp_peaks,"x", color='red')
-        axs.plot(self.z_err_freq_peaks, self.z_err_amp_peaks,"x", color='green')
-        axs.legend(['reference','position','error','reference peaks','position peaks','error peaks'])
+        axs.legend(['reference','position','reference peaks','position peaks'])
         axs.set_xlim([min_freq_plot, max_freq_plot])
-        axs.grid(color=self.chosen_grid_color, linestyle=self.chosen_grid_linestyle, linewidth=self.chosen_grid_linewidth)
+        axs.grid(color=self.chosen_grid_color,\
+                 linestyle=self.chosen_grid_linestyle,\
+                 linewidth=self.chosen_grid_linewidth)
         print('* figure 5:\033[33m frequency spectrum of z reference and position\033[0m')
 
     ### function to generate and show all plots available
@@ -49,7 +62,6 @@ class ZAnalysis(FlightDataHandler):
     def show_all(self):
         print("Motor saturation percentage: {:.2f}".format(self.get_motors_saturated()))
         print("Hit ground percentage: {:.2f}".format(self.get_hit_ground()))
-        print("Detected behaviour is: {}".format(self.get_behaviour()))
         print("Degree of non-linearity is: {}".format(self.get_z_non_linear_degree()))
         print("Degree of filtering is: {}".format(self.get_z_filter_degree()))
         self.positionSpeedPlot()
@@ -62,81 +74,58 @@ class ZAnalysis(FlightDataHandler):
     ##########################
 
     '''
+    Utility function that computes the number of samples of trace
+    to analyse according to the number of periods of interest.
+    This can be used to test the effect of considering different
+    numbers of periods in the fft.
+    '''
+    def compute_end_analysis(self):
+        time_coef = float(self.data_location.split('-')[-1]) # time dilation coefficient of test
+        if num_periods_spectrum > 0 :
+            self.end_analysis = settle + num_periods_spectrum*int((10/time_coef)/dt)
+            if self.end_analysis>self.trace_length :
+                print("Trying to fft more periods than we have, {} I will use what I have".format(self.data_location))
+                self.end_analysis = self.trace_length
+        else :
+            self.end_analysis = self.trace_length
+
+    '''
     Function that computes the frequency-peaks-based behaviour definition.
     ALGO: TODO --- write documentation sketch of algo
-    USES: 
-    OUTPUT: list of triplets [(frequency, amplitude, behaviour)] TODO --- fix me
+    Computes spectra of input and output with relative peaks.
+    Evaluates the behaviour of peaks as:
+     - z_non_linear_degree (one for all test)
+     - z_filter_degree (one for each peak in reference spectrum)
     '''
     def freq_behaviour_z(self):
-        # FREQ. DOM. ANALYSIS
-
-        ### PARAMETERS -- TODO should be defined elsewhere
-        peak_threshold = 0.05 # percentage of maximum peak above which we look for more peaks
-        dt     = 0.001     # sampling time in seconds
-        settle = int(5/dt) # test  warm up time not used in analysis
-        freq_diff_tolerance = 1 # maximum accepted difference in indexes over freq vector of peaks
-        base_hover = 1 # removed from the reference and position to study only effect of repeated shape
-        ### END PARAMETERS
-
-        # apply fft to a given number of periods
-        # this can be used to test the effect of considering test durations defined by the 
-        # number of repetitions rather than the absolute time
-        # TODO: since the number of periods will be the metric to define test duration
-        #       it will come included in the test duration. Move it to test definition.
-        time_coef = float(self.data_location.split('-')[-1]) # get duration of a single period
-        num_periods_spectrum = 5 # number of periods of the input to be used for dft (max = (60-5)*time_coef/10)
-        if num_periods_spectrum > 0 :
-            end_analysis = settle + num_periods_spectrum*int((10/time_coef)/dt)
-            if end_analysis>self.trace_length :
-                print("Trying to analyse more periods than we have, {} I will use what I have".format(self.data_location))
-                end_analysis = self.trace_length
-        else :
-            end_analysis = self.trace_length
-        z_fft_freq = fft.fftfreq((end_analysis-settle), d=dt)
-
-        # fft computation and extract module
-        z_err_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis]-self.pos[2,:][settle:end_analysis],\
-                                           norm="forward", workers=-1)))
-        z_ref_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis]-base_hover,\
-                                           norm="forward", workers=-1)))
-        z_pos_fft  = list(map(abs, fft.fft(self.pos[2,:][settle:end_analysis]-base_hover,\
-                                           norm="forward", workers=-1)))
+        if not(hasattr(self, "end_analysis")):
+            self.compute_end_analysis()
+        ### AMPLITUDE OF FREQUENCY SPECTRUM COMPUTATION ###
+        z_fft_freq = fft.fftfreq(self.end_analysis-settle, d=dt)
+        cropped_ref = self.set_pt[2,settle:self.end_analysis]-base_hover
+        cropped_pos = self.pos[2,:][settle:self.end_analysis]-base_hover
+        z_ref_fft  = [abs(x) for x in fft.fft(cropped_ref, norm="forward", workers=-1, overwrite_x=True)]
+        z_pos_fft  = [abs(x) for x in fft.fft(cropped_pos, norm="forward", workers=-1, overwrite_x=True)]
         # spectrum is symmetric
-        self.z_err_fft = z_err_fft[:len(z_err_fft)//2]
-        self.z_ref_fft = z_ref_fft[:len(z_ref_fft)//2]
-        self.z_pos_fft = z_pos_fft[:len(z_pos_fft)//2]
         self.z_fft_freq = z_fft_freq[:len(z_fft_freq)//2]
+        self.z_ref_fft  = z_ref_fft[:len(z_ref_fft)//2]
+        self.z_pos_fft  = z_pos_fft[:len(z_pos_fft)//2]
 
-        # TODO --- define peak threshold only on the base of ref amplitude?
-        #      --- in general should investigate better how to do this:
-        #      --- see the problem for low freq tests and triangular wave and threshold at 0.1
-
-        # find peaks in reference spectrum 
-        # peak at zero frequency is included manually because it is always important
-        # but also always excluded by find_peaks.
-        ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft,\
-                                                  height= peak_threshold*max(self.z_ref_fft[1:]))
-        ref_peaks_indexes = np.hstack(([0],ref_peaks_indexes))
+        # find peaks in reference spectrum
+        peak_threshold = peak_threshold_percentage * max(self.z_ref_fft[1:]) # min value of peaks relative to reference
+        # zero frequency is always included because it is always important but also always excluded by find_peaks
+        ref_peaks_indexes, _  = signal.find_peaks(self.z_ref_fft, height= peak_threshold)
+        ref_peaks_indexes     = np.hstack(([0],ref_peaks_indexes))
         self.z_ref_freq_peaks = np.array(self.z_fft_freq)[ref_peaks_indexes]
         self.z_ref_amp_peaks  = np.array(self.z_ref_fft)[ref_peaks_indexes]
-
         # find peaks in output spectrum
-        pos_peaks_indexes, _  = signal.find_peaks(self.z_pos_fft,\
-                                                  height= peak_threshold*max(self.z_ref_fft[1:]))
-        pos_peaks_indexes = np.hstack(([0],pos_peaks_indexes))
+        pos_peaks_indexes, _  = signal.find_peaks(self.z_pos_fft, height= peak_threshold)
+        pos_peaks_indexes     = np.hstack(([0],pos_peaks_indexes))
         self.z_pos_freq_peaks = np.array(self.z_fft_freq)[pos_peaks_indexes]
         self.z_pos_amp_peaks  = np.array(self.z_pos_fft)[pos_peaks_indexes]
 
-        # find peaks in error spectrum
-        err_peaks_indexes, _  = signal.find_peaks(self.z_err_fft,\
-                                                  height= peak_threshold*max(self.z_ref_fft[1:]))
-        err_peaks_indexes = np.hstack(([0],err_peaks_indexes))
-        self.z_err_freq_peaks = np.array(self.z_fft_freq)[err_peaks_indexes]
-        self.z_err_amp_peaks  = np.array(self.z_err_fft)[err_peaks_indexes]
-
         ### BEHAVIOUR DETECTION ###
         # initialize behaviour variables
-        self.freq_analysis_bin_behaviour = [self.bh_undefined] * len(ref_peaks_indexes)
         self.z_non_linear_degree = 0
         self.z_filter_degree     = [0] * len(ref_peaks_indexes)
 
@@ -158,21 +147,21 @@ class ZAnalysis(FlightDataHandler):
                                            self.z_pos_fft[pp_idx]/self.z_ref_amp_peaks[1]
 
     def analyse_z_sat_and_ground(self):
-        ### PARAMETERS -- TODO should be defined elsewhere
-        dt = 0.001         # sampling time in seconds
-        thrust_min = 20000 # saturation limits of motors
-        thrust_max = 65535 # 
-        settle     = int(5/dt) #
-        ### END PARAMETERS
-
-        self.motors_saturated_percentage = sum([(x==thrust_min or x==thrust_max) for x in self.u[0,settle:self.trace_length]])\
-                                           /(self.trace_length-settle)
-        self.hit_ground_percentage = sum( x<0.01 for x in self.pos[2,settle:self.trace_length] )\
-                                     /(self.trace_length-settle)
+        if not(hasattr(self, "end_analysis")):
+            self.compute_end_analysis()
+        self.motors_saturated_percentage = sum([(x==thrust_min or x==thrust_max) for x in self.u[0,settle:self.end_analysis]])\
+                                           /(self.end_analysis-settle)
+        self.hit_ground_percentage = sum( x<0.01 for x in self.pos[2,settle:self.end_analysis] )\
+                                     /(self.end_analysis-settle)
 
     #####################
     ### GET FUNCTIONS ###
     #####################
+
+    def get_end_analysis(self):
+        if not(hasattr(self, "end_analysis")):
+            self.compute_end_analysis()
+        return self.end_analysis
 
     def get_motors_saturated(self):
         if not(hasattr(self, "motors_saturated_percentage")):
