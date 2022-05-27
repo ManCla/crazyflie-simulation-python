@@ -95,8 +95,7 @@ class ZAnalysis(FlightDataHandler):
         z_fft_freq = fft.fftfreq((end_analysis-settle), d=dt)
 
         # fft computation and extract module
-        z_err_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis]\
-                                           -self.pos[2,:][settle:end_analysis],\
+        z_err_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis]-self.pos[2,:][settle:end_analysis],\
                                            norm="forward", workers=-1)))
         z_ref_fft  = list(map(abs, fft.fft(self.set_pt[2,settle:end_analysis]-base_hover,\
                                            norm="forward", workers=-1)))
@@ -152,25 +151,11 @@ class ZAnalysis(FlightDataHandler):
         for pp_idx in pos_peaks_indexes :
             # look for same peak in reference spectrum peaks
             find_ref_peak = [abs(x-pp_idx)<=freq_diff_tolerance for x in ref_peaks_indexes]
-            if any(find_ref_peak) :
-                # peak was found, define type {ref_tracking, filtering}
-                idx = find_ref_peak.index(True)
-                if self.z_pos_fft[ref_peaks_indexes[idx]]>self.z_err_fft[ref_peaks_indexes[idx]]:
-                    self.freq_analysis_bin_behaviour[idx] = self.bh_good_tracking
-                else :
-                    self.freq_analysis_bin_behaviour[idx] = self.bh_filtering
-            else :
-                # peak was not found: non-linear behaviour detected, mark all input frequencies
-                self.freq_analysis_bin_behaviour = [self.bh_no_linear] * len(ref_peaks_indexes) # binary detection
-                self.z_non_linear_degree = min(1,self.z_non_linear_degree + self.z_pos_fft[pp_idx]/max(self.z_ref_fft[1:])) # gradual detection
-        # if behaviour is OK iterate over remaining reference peaks 
-        # and mark as filtering
-        if self.freq_analysis_bin_behaviour[0] != self.bh_no_linear:
-            for rp_idx in ref_peaks_indexes :
-                find_pos_peak = [abs(x-rp_idx)<=freq_diff_tolerance for x in pos_peaks_indexes]
-                if not(any(find_pos_peak)) :
-                    idx = np.where(ref_peaks_indexes==rp_idx)[0][0]
-                    self.freq_analysis_bin_behaviour[idx] = self.bh_filtering
+            if not(any(find_ref_peak)) :
+                # all peaks not found in the ref spectrum contribute to degree of non linearity
+                # the degree is normalized to the max amplitude of the input spectrum
+                self.z_non_linear_degree = self.z_non_linear_degree +\
+                                           self.z_pos_fft[pp_idx]/self.z_ref_amp_peaks[1]
 
     def analyse_z_sat_and_ground(self):
         ### PARAMETERS -- TODO should be defined elsewhere
@@ -198,11 +183,6 @@ class ZAnalysis(FlightDataHandler):
         if not(hasattr(self, "hit_ground_percentage")):
             self.analyse_z_sat_and_ground()
         return self.hit_ground_percentage
-
-    def get_behaviour(self):
-        if not(hasattr(self, "freq_analysis_bin_behaviour")):
-            self.freq_behaviour_z()
-        return self.freq_analysis_bin_behaviour
 
     def get_z_fft_freq(self):
         if not(hasattr(self, "z_fft_freq")):

@@ -8,7 +8,8 @@ from cfSimulator import ZAnalysis as fdh
 z_test_directory    = 'z-test-set'
 
 # script parameters
-use_nl_bh_binary = False
+non_lin_threshold = 0.3
+stain_non_linear_tests_in_filtering = False
 
 if __name__ == "__main__":
 
@@ -164,24 +165,22 @@ if __name__ == "__main__":
         freq_coordinates[0] = x_min # show zero frequency to the left of the plot
         ampl_coordinates = data_storage.get_z_ref_fft_peaks()
 
-        ## get degree of non linear behaviour
-        if use_nl_bh_binary :
-            # detect non-linear behaviour as a binary variable when new peaks appear
-            non_lin_color = fdh.bh_palette[data_storage.get_behaviour()]/255
-        else :
-            # detect non-linear behaviour as ration between new peaks and peaks in reference
-            nld = data_storage.get_z_non_linear_degree()
-            non_lin_color = [[nld,1-nld,0]] * len(freq_coordinates)
-
-        ## get degree of filtering
-
-        ## non linearity degree actual plotting
+        ### NON LINEAR DEGREE
+        # note: this is one measure for the whole test
+        nld = min(1,data_storage.get_z_non_linear_degree())     # get behaviour
+        non_lin_color = [[nld,1-nld,0]] * len(freq_coordinates) # transform into rgb colour
         non_lin_ax_shapes[plot_index].scatter(freq_coordinates, ampl_coordinates, marker='o',s=2,c=non_lin_color)
         non_lin_ax.scatter(freq_coordinates, ampl_coordinates, marker='o',s=2,c=non_lin_color)
-        ## filtering degree actual plotting
-        if data_storage.get_behaviour()!=data_storage.bh_no_linear :
+
+        ### FILTERING DEGREE
+        # note: this is a measure for each of the peaks of the input
+        if nld>non_lin_threshold and stain_non_linear_tests_in_filtering :
+            # non linear behaviour is above threshold, stain it
+            filter_color = [ [1,0,0] for x in data_storage.get_z_filter_degree()]
+        else : 
+            # colour for degree of filtering
             filter_color = [ [0,min(x,1),1-min(x,1)] for x in data_storage.get_z_filter_degree()]
-            filter_ax_shapes[plot_index].scatter(freq_coordinates, ampl_coordinates, marker='o',s=2,c=filter_color)
-            filter_ax.scatter(freq_coordinates, ampl_coordinates, marker='o',s=2,c=filter_color)
+        filter_ax_shapes[plot_index].scatter(freq_coordinates, ampl_coordinates, marker='o',s=2,c=filter_color)
+        filter_ax.scatter(freq_coordinates, ampl_coordinates, marker='o',s=2,c=filter_color)
 
     plt.show()
