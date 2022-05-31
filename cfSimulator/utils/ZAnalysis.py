@@ -84,7 +84,7 @@ class ZAnalysis(FlightDataHandler):
         if num_periods_spectrum > 0 :
             self.end_analysis = settle + num_periods_spectrum*int((10/time_coef)/dt)
             if self.end_analysis>self.trace_length :
-                print("TEST: {} Trying to fft too many periods: I will use what I have".format(self.data_location))
+                print("Trying to fft too many periods: I will use what I have--in TEST: {}".format(self.data_location))
                 self.end_analysis = self.trace_length
         else :
             self.end_analysis = self.trace_length
