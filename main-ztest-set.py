@@ -40,12 +40,15 @@ shapes = zShapes.shapes
 ### Time Coefficients
 # for each time coefficient tests will be performed
 # using the coefficient to shrink or dilate time
-time_speeds = [0.25,0.5,0.75,1,1.5,2,2.5,3,3.5,4,5,6]
+time_speeds = [0.25,0.5,0.75,1,\
+               1.25,1.5,1.75,2,\
+               2.25,2.5,2.75,3,\
+               3.25,3.5,3.75,4,5,6]
 
 ### Amplitude Coefficients
 # for each amplitude coefficient tests will be performed
 # using the coefficient to scale the amplitude of the signal
-amplitudes  = [0.5,0.75,1,1.5,2,2.5,3,4,5,6,7,8]
+amplitudes  = [0.5,0.75,1,1.5,2,2.5,3,4,5,6,7,8,9]
 
 ####################
 ### TEST WARM UP ###
