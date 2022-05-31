@@ -111,7 +111,12 @@ if __name__ == "__main__":
         ### NON LINEAR DEGREE
         # note: this is one measure for the whole test
         nld = min(1,data_storage.get_z_non_linear_degree())     # get behaviour
-        non_lin_color = [[nld,1-nld,0]] * len(freq_coordinates) # transform into rgb colour
+        if nld<0.5 :
+            # gradient from blue to yellow
+            non_lin_color = [[2*nld,2*nld,2*(0.5-nld)]] * len(freq_coordinates) # transform into rgb colour
+        else :
+            # gradient from yellow to red
+            non_lin_color = [[1,2*(0.5-(nld-0.5)),0]] * len(freq_coordinates) # transform into rgb colour
         non_lin_ax_shapes[plot_index].scatter(freq_coordinates, ampl_coordinates, marker='o',s=2,c=non_lin_color)
         non_lin_ax.scatter(freq_coordinates, ampl_coordinates, marker='o',s=2,c=non_lin_color)
 
