@@ -48,7 +48,15 @@ time_speeds = [0.25,0.5,0.75,1,\
 ### Amplitude Coefficients
 # for each amplitude coefficient tests will be performed
 # using the coefficient to scale the amplitude of the signal
-amplitudes  = [0.5,0.75,1,1.5,2,2.5,3,4,5,6,7,8,9]
+amplitudes  = [0.5,0.75,1,\
+               1.5,     2,\
+               2.5,     3,\
+               3.5,     4,\
+               4.5,     5,\
+                        6,\
+                        7,\
+                        8,\
+                        9]
 
 ####################
 ### TEST WARM UP ###
