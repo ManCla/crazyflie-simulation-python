@@ -9,7 +9,7 @@ z_test_directory    = 'z-test-set'
 
 # script parameters
 non_lin_threshold = 0.3
-stain_non_linear_tests_in_filtering = False
+stain_non_linear_tests_in_filtering = True
 
 # plotting parameters
 x_label = "Frequency [Hz]"
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         if nld>non_lin_threshold and stain_non_linear_tests_in_filtering :
             # non linear behaviour is above threshold, stain it
             filter_color = [ [1,0,0] for x in data_storage.get_z_filter_degree()]
-        else : 
+        else :
             # colour for degree of filtering
             filter_color = [ [0,min(x,1),1-min(x,1)] for x in data_storage.get_z_filter_degree()]
         filter_ax_shapes[plot_index].scatter(freq_coordinates, ampl_coordinates, marker='o',s=2,c=filter_color)
