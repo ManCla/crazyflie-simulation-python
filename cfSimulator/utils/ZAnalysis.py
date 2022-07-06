@@ -142,22 +142,10 @@ class ZAnalysis(FlightDataHandler):
 
         for idx in range(len(ref_peaks_indexes)) :
             rp_idx = ref_peaks_indexes[idx]
-            # remove input frequencies from output spectrum
-            z_pos_fft_non_lin_part[rp_idx] = 0
+            z_pos_fft_non_lin_part[rp_idx] = 0 # remove input frequencies from output spectrum
             self.z_filter_degree[idx] = abs((self.z_pos_fft[rp_idx]/self.z_ref_fft[rp_idx])-1)
 
-        # # iterate over frequency of peaks of position spectrum
-        # for pp_idx in pos_peaks_indexes :
-        #     # look for same peak in reference spectrum peaks
-        #     find_ref_peak = [abs(x-pp_idx)<=freq_diff_tolerance for x in ref_peaks_indexes]
-        #     if not(any(find_ref_peak)) :
-        #         # all peaks not found in the ref spectrum contribute to degree of non linearity
-        #         # the degree is normalized to the max amplitude of the input spectrum
-        #         self.z_non_linear_degree = self.z_non_linear_degree +\
-        #                                    self.z_pos_fft[pp_idx]/self.z_ref_amp_peaks[1]
         nl_deg = max(z_pos_fft_non_lin_part)/max(self.z_ref_fft[1:])
-        # print("--->max of non linear part"+str(max(z_pos_fft_non_lin_part)))
-        # print("--->max of reference spect"+str(max(self.z_ref_fft)))
         if nl_deg > 1 :
             print("---nonlinear degree >1!!!-----in TEST: {}".format(self.data_location))
         self.z_non_linear_degree = min(1,nl_deg)
