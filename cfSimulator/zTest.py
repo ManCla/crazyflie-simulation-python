@@ -8,7 +8,7 @@ TODO: write class description
  - avoid discontinuity at beginning of shape (after warm up)
 To add a new shape:
  - add shape name to list
- - write utility function that creates pattern over a standard time of 10s
+ - write utility function that creates pattern over a standard time of 1s
  - add elif selection in refGen function that calls the function above
 '''
 
@@ -16,7 +16,7 @@ class zTest():
     
     # list of available shapes
     shapes = ['steps', 'trapezoidal', 'triangular','sinus','ud1']
-    base_period = 10
+    base_period = 1
     offset      = 1 # [m]
     settle      = 5 # [s]
     num_periods = 5 # [ ] number of periods of input to repeat
@@ -100,14 +100,3 @@ class zTest():
         if percentage_period<=0.65 :
             return 0.5
         return 0.5+0.5*np.sin(((percentage_period-0.15) % 1)*4*np.pi)
-
-
-'''
-Subclass for sinusoidal test cases. Only used to be able to feed the
-test case directly with the frequency instead of the time coefficient
-'''
-class zTestSinus(zTest):
-
-    def __init__(self, frequency, amplitude):
-        pulse = 2*np.pi*frequency
-        super(zTestSinus, self).__init__('sinus', amplitude, pulse)

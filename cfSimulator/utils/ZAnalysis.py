@@ -13,6 +13,7 @@ peak_threshold_percentage = 0.05 # percentage of max ref peak above which we loo
 
 ### DRONE AND TEST PARAMETERS 
 # TODO: should be retrieved from test case and model
+base_period_input = 1 # base period over which input shapes are defined. Used to compute number of periods
 dt     = 0.001     # sampling time in seconds
 settle = int(5/dt) # test  warm up time not used in analysis
 base_hover = 1     # removed from the reference and position to study only effect of repeated shape
@@ -87,7 +88,7 @@ class ZAnalysis(FlightDataHandler):
     def compute_end_analysis(self):
         time_coef = float(self.data_location.split('-')[-1]) # time dilation coefficient of test
         if num_periods_spectrum > 0 :
-            self.end_analysis = settle + num_periods_spectrum*int((10/time_coef)/dt)
+            self.end_analysis = settle + num_periods_spectrum*int((base_period_input/time_coef)/dt)
             if self.end_analysis>self.trace_length :
                 print("Trying to fft too many periods: I will use what I have--in TEST: {}".format(self.data_location))
                 self.end_analysis = self.trace_length
