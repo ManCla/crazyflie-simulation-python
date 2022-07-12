@@ -12,7 +12,7 @@ To add a new shape:
  - add elif selection in refGen function that calls the function above
 '''
 
-class zShapes():
+class zTest():
     
     # list of available shapes
     shapes = ['steps', 'trapezoidal', 'triangular','sinus','ud1']
