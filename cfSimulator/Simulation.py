@@ -2,7 +2,7 @@ import numpy as np
 from .Physics import cfPhysics
 from .Controller import cfPIDController
 from .StateEstimator import cfEKF
-from .utils.FlightDataHandler import FlightDataHandler
+from .utils.ZAnalysis import ZAnalysis
 
 ### simulation parameters
 t_init          = 0
@@ -87,7 +87,7 @@ class cfSimulation():
 		# store data as object attributes of storage #
 		##############################################
 
-		output = FlightDataHandler()
+		output = ZAnalysis()
 		output.store(ref.trajectoryType, t, x_store, u_store, eta, \
 					 acc, pxCount, set_pt, zrange, err_fd, x_est)
 

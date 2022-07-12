@@ -47,7 +47,7 @@ class FlightDataHandler:
         else :
             # if provided, save with custom filename
             filename = name 
-        with open(self.data_directory+"/"+filename, "wb") as f:
+        with open(filename, "wb") as f:
             pk.dump(self, f, protocol=pk.HIGHEST_PROTOCOL)
 
     def open(self, data_location, silent=False):
