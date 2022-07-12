@@ -17,9 +17,9 @@ class cfSimulation():
 	def __init__(self):
 		pass
 
-	def run(self, ref, t_final):
-
-		n_steps         = int((t_final-t_init)/t_resolution)
+	def run(self, ref):
+		t_final = ref.duration # test case defines duration
+		n_steps = int((t_final-t_init)/t_resolution)
 
 		##########################################
 		# initialization of simulation variables #
