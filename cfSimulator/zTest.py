@@ -17,8 +17,11 @@ class zTest():
     # list of available shapes
     shapes = ['steps', 'trapezoidal', 'triangular','sinus','ud1']
     base_period = 10
+    offset      = 1 # [m]
+    settle      = 5 # [s]
+    num_periods = 5 # [ ] number of periods of input to repeat
 
-    def __init__(self, shape, amplitude, time, offset, settle):
+    def __init__(self, shape, amplitude, time_coef):
         
         if not(shape in self.shapes):
             print('Shape element must be present in zShapes.shapes')
@@ -26,9 +29,8 @@ class zTest():
         self.shape = shape
         self.trajectoryType = shape # needed so we can store in test result object
         self.amplitude = amplitude
-        self.time = time
-        self.offset = offset
-        self.settle = settle
+        self.time_coef = time_coef
+        self.duration = self.settle + self.num_periods * (self.base_period/time_coef)
 
     def refGen(self, t):
         # function called by the simulation object that returns the 
@@ -39,7 +41,7 @@ class zTest():
         if t<self.settle : # implement warm up
             return np.array([0,0,self.offset])
 
-        t_scaled = self.time*(t-self.settle)    # scale time
+        t_scaled = self.time_coef*(t-self.settle)    # scale time
 
         # switch statement over the different possible shapes
         if self.shape=='steps' :
@@ -98,3 +100,14 @@ class zTest():
         if percentage_period<=0.65 :
             return 0.5
         return 0.5+0.5*np.sin(((percentage_period-0.15) % 1)*4*np.pi)
+
+
+'''
+Subclass for sinusoidal test cases. Only used to be able to feed the
+test case directly with the frequency instead of the time coefficient
+'''
+class zTestSinus(zTest):
+
+    def __init__(self, frequency, amplitude):
+        pulse = 2*np.pi*frequency
+        super(zTestSinus, self).__init__('sinus', amplitude, pulse)
