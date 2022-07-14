@@ -103,7 +103,7 @@ class ZAnalysis(FlightDataHandler):
      - z_non_linear_degree (one for all test)
      - z_filter_degree (one for each peak in reference spectrum)
     '''
-    def freq_behaviour_z(self):
+    def freq_behaviour_z(self, silent=True):
         if not(hasattr(self, "end_analysis")):
             self.compute_end_analysis()
         ### AMPLITUDE OF FREQUENCY SPECTRUM COMPUTATION ###
@@ -147,7 +147,7 @@ class ZAnalysis(FlightDataHandler):
             self.z_filter_degree[idx] = abs((self.z_pos_fft[rp_idx]/self.z_ref_fft[rp_idx])-1)
 
         nl_deg = max(z_pos_fft_non_lin_part)/max(self.z_ref_fft[1:])
-        if nl_deg > 1 :
+        if nl_deg > 1 and not(silent) :
             print("---nonlinear degree >1!!!-----in TEST: {}".format(self.data_location))
         self.z_non_linear_degree = min(1,nl_deg)
 
