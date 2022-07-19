@@ -89,7 +89,7 @@ class ZAnalysis(FlightDataHandler):
         time_coef = float(self.data_location.split('-')[-1]) # time dilation coefficient of test
         if num_periods_spectrum > 0 :
             self.end_analysis = settle + num_periods_spectrum*int((base_period_input/time_coef)/dt)
-            if self.end_analysis>self.trace_length :
+            if self.end_analysis>(self.trace_length+1) : # we accept a rounding error
                 print("Trying to fft too many periods: I will use what I have--in TEST: {}".format(self.data_location))
                 self.end_analysis = self.trace_length
         else :
