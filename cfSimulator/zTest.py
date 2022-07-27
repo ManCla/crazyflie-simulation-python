@@ -15,7 +15,7 @@ To add a new shape:
 class zTest():
     
     # list of available shapes
-    shapes = ['steps', 'trapezoidal', 'triangular','sinus','ud1']
+    shapes = ['steps', 'trapezoidal', 'triangular','sinus','ud1','impulse','ramp']
     base_period = 1
     offset      = 1 # [m]
     settle      = 5 # [s]
@@ -54,6 +54,10 @@ class zTest():
             shape_term = self.sinus(t_scaled)
         elif self.shape=='ud1' :
             shape_term = self.ud1(t_scaled)
+        elif self.shape=='impulse' :
+            shape_term = self.impulse(t_scaled)
+        elif self.shape=='ramp' :
+            shape_term = self.ramp(t_scaled)
 
         z = self.offset + self.amplitude * shape_term # apply offset and scaling
         return np.array([0,0,z])
@@ -100,3 +104,15 @@ class zTest():
         if percentage_period<=0.65 :
             return 0.5
         return 0.5+0.5*np.sin(((percentage_period-0.15) % 1)*4*np.pi)
+
+    def impulse(self,t):
+        # basically a square wave with duty cycle at 2%
+        percentage_period = (t % self.base_period) / self.base_period
+        if percentage_period<=0.02 :
+            return 1
+        return 0
+
+    def ramp(self,t):
+        # basically a normalized modulo function
+        percentage_period = (t % self.base_period) / self.base_period
+        return percentage_period
