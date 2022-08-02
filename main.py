@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
 	# initialize simulation objects
 	sim = cfSimulation()
-	ref = zTest(reference,1,0.1)
+	ref = zTest(reference,1,1)
 	duration  = ref.duration
 
 	# actual test execution
