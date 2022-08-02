@@ -1,5 +1,5 @@
 import time
-
+import numpy as np
 from cfSimulator import cfSimulation, zTest
 
 reference = "ramp" # type of reference sequence
@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
 	# actual test execution
 	start_test = time.perf_counter()
-	storeObj = sim.run(ref)
+	storeObj = sim.run(ref, inital_drone_state=ref.get_initial_state())
 	end_test = time.perf_counter()
 	print("This test took " + str(end_test-start_test) + " seconds")
 
