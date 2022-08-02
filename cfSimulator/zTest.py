@@ -32,16 +32,20 @@ class zTest():
         self.time_coef = time_coef
         self.duration = self.settle + self.num_periods * (self.base_period/time_coef)
 
+        self.initial_state = np.zeros(13)
+        self.initial_state[2] = self.offset
+        self.initial_state[6] = 1 # attitude quaternion has always norm 1
+
+    def get_initial_state(self):
+        return self.initial_state
+
     def refGen(self, t):
         # function called by the simulation object that returns the 
         # current value for the reference
         # This function also includes the computations that are
         # the same for the different shapes (amp,time scaling and offsets)
 
-        if t<self.settle : # implement warm up
-            return np.array([0,0,self.offset])
-
-        t_scaled = self.time_coef*(t-self.settle)    # scale time
+        t_scaled = self.time_coef*(t)    # scale time
 
         # switch statement over the different possible shapes
         if self.shape=='steps' :
