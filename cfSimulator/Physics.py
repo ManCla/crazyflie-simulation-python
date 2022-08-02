@@ -12,7 +12,7 @@ import sys
 import random as rnd
 
 class cfPhysics():
-	def __init__(self, seed=1):
+	def __init__(self, seed=1, initial_state=False):
 		# Parameters
 		self.g   = 9.81       # m/s^2 
 		self.m   = 0.027+0.004      # kg
@@ -34,8 +34,19 @@ class cfPhysics():
 
 		# States 
 		# Initialize State Conditions
-		self.x = np.zeros(self.n_states)
-		self.x[6] = 1 # attitude quaternion has always norm 1
+		if initial_state.any==False : # initial state has attitude which must be a non-zero vector 
+			self.x = np.zeros(self.n_states)
+			self.x[6] = 1 # attitude quaternion has always norm 1
+		else :
+			norm_attitude = np.sqrt(initial_state[6]**2+\
+				                    initial_state[7]**2+\
+				                    initial_state[8]**2+\
+				                    initial_state[9]**2)
+			if abs(norm_attitude-1)>0.001 :
+				print("ERROR -- cfPhysics: drone initial attitude must have norm 1")
+				exit()
+			self.x = initial_state
+
 		self.currentTime = 0.0 # (relative) time at which the model is
 
 		# Variales for measurements computation

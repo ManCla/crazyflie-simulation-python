@@ -17,14 +17,14 @@ class cfSimulation():
 	def __init__(self):
 		pass
 
-	def run(self, ref):
+	def run(self, ref, inital_drone_state=False):
 		t_final = ref.duration # test case defines duration
 		n_steps = int((t_final-t_init)/t_resolution)
 
 		##########################################
 		# initialization of simulation variables #
 		##########################################
-		physics = cfPhysics()
+		physics = cfPhysics(initial_state=inital_drone_state)
 		ctrl    = cfPIDController(physics.config, physics.b,\
 		                          physics.I, physics.m, physics.g,\
 		                          physics.k, physics.l)
