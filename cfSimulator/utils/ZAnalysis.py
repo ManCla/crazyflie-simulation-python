@@ -149,7 +149,7 @@ class ZAnalysis(FlightDataHandler):
         nl_deg = max(z_pos_fft_non_lin_part)/max(self.z_ref_fft[1:])
         if nl_deg > 1 and not(silent) :
             print("---nonlinear degree >1!!!-----in TEST: {}".format(self.data_location))
-        self.z_non_linear_degree = min(1,nl_deg)
+        self.z_non_linear_degree = nl_deg
 
     def analyse_z_sat_and_ground(self):
         if not(hasattr(self, "end_analysis")):
