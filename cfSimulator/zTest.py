@@ -15,7 +15,7 @@ To add a new shape:
 class zTest():
     
     # list of available shapes
-    shapes = ['steps', 'ramp', 'trapezoidal', 'triangular', 'impulse', 'sinus', 'ud1']
+    shapes = ['steps', 'ramp', 'trapezoidal', 'triangular', 'sinus', 'ud1', 'impulse']
     base_period = 1
     offset      = 1 # [m]
     settle      = 5 # [s]
