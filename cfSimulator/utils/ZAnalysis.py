@@ -159,8 +159,12 @@ class ZAnalysis(FlightDataHandler):
             self.freq_behaviour_z()
         #get indexes of maxima elements - exclude zero frequency
         ordered_amp_indexes = np.array(self.z_ref_fft[1:]).argsort()[-num_maxima:]+1
-        self.z_ref_freq_maxima = np.array(self.z_fft_freq)[ordered_amp_indexes]
-        self.z_ref_amp_maxima  = np.array(self.z_ref_fft)[ordered_amp_indexes]
+        z_ref_freq_maxima = np.array(self.z_fft_freq)[ordered_amp_indexes]
+        z_ref_amp_maxima  = np.array(self.z_ref_fft)[ordered_amp_indexes]
+        # output ordered by increasing frequency
+        ordered_freq_indexes = np.array(z_ref_freq_maxima).argsort()
+        self.z_ref_freq_maxima = np.array(z_ref_freq_maxima)[ordered_freq_indexes]
+        self.z_ref_amp_maxima  = np.array(z_ref_amp_maxima)[ordered_freq_indexes]
         return self.z_ref_freq_maxima, self.z_ref_amp_maxima
 
     def analyse_z_sat_and_ground(self):
