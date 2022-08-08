@@ -16,7 +16,7 @@ class zTest():
     
     # list of available shapes
     # 'impulse' shape is excluded since it doesn't behave very nicely on a real system
-    shapes = ['steps', 'ramp', 'trapezoidal', 'triangular', 'sinus', 'ud1']
+    shapes = ['steps', 'ramp', 'trapezoidal', 'triangular', 'sinus', 'ud1', 'ud2']
     base_period = 1
     offset      = 1 # [m]
     settle      = 5 # [s]
@@ -59,6 +59,8 @@ class zTest():
             shape_term = self.sinus(t_scaled)
         elif self.shape=='ud1' :
             shape_term = self.ud1(t_scaled)
+        elif self.shape=='ud2' :
+            shape_term = self.ud2(t_scaled)
         elif self.shape=='impulse' :
             shape_term = self.impulse(t_scaled)
         elif self.shape=='ramp' :
@@ -109,6 +111,14 @@ class zTest():
         if percentage_period<=0.65 :
             return 0.5
         return 0.5+0.5*np.sin(((percentage_period-0.15) % 1)*4*np.pi)
+
+    def ud2(self,t):
+        percentage_period = (t % self.base_period) / self.base_period
+        if percentage_period<=0.5 :
+            return 1-np.exp(percentage_period*(-10/0.5))
+        if percentage_period<=0.75  :
+            return 1-(4*(percentage_period-0.5))
+        return 0
 
     '''
     Note that this is not used any longer.
