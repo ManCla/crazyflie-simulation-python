@@ -15,7 +15,8 @@ To add a new shape:
 class zTest():
     
     # list of available shapes
-    shapes = ['steps', 'ramp', 'trapezoidal', 'triangular', 'sinus', 'ud1', 'impulse']
+    # 'impulse' shape is excluded since it doesn't behave very nicely on a real system
+    shapes = ['steps', 'ramp', 'trapezoidal', 'triangular', 'sinus', 'ud1']
     base_period = 1
     offset      = 1 # [m]
     settle      = 5 # [s]
@@ -109,6 +110,10 @@ class zTest():
             return 0.5
         return 0.5+0.5*np.sin(((percentage_period-0.15) % 1)*4*np.pi)
 
+    '''
+    Note that this is not used any longer.
+    Add it back to the list of shapes if you want to use it
+    '''
     def impulse(self,t):
         # basically a square wave with duty cycle at 2%
         percentage_period = (t % self.base_period) / self.base_period
