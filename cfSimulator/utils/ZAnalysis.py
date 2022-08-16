@@ -151,17 +151,6 @@ class ZAnalysis(FlightDataHandler):
             print("---nonlinear degree >1!!!-----in TEST: {}".format(self.data_location))
         self.z_non_linear_degree = nl_deg
 
-    '''
-    get given number of maximum components of reference fft
-    '''
-    def maxima_ref_fa_components(self, num_maxima) :
-        if not(hasattr(self, "z_ref_freq_peaks")):
-            self.freq_behaviour_z()
-        z_ref_freq_peaks_local = np.hstack((self.z_ref_freq_peaks[1:],np.zeros(num_maxima)))[0:num_maxima]
-        z_ref_amp_peaks_local = np.hstack((self.z_ref_amp_peaks[1:],np.zeros(num_maxima)))[0:num_maxima]
-
-        return z_ref_freq_peaks_local, z_ref_amp_peaks_local
-
     def analyse_z_sat_and_ground(self):
         if not(hasattr(self, "end_analysis")):
             self.compute_end_analysis()
