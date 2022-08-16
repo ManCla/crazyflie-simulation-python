@@ -157,15 +157,10 @@ class ZAnalysis(FlightDataHandler):
     def maxima_ref_fa_components(self, num_maxima) :
         if not(hasattr(self, "z_ref_freq_peaks")):
             self.freq_behaviour_z()
-        #get indexes of maxima elements - exclude zero frequency
-        ordered_amp_indexes = np.array(self.z_ref_fft[1:]).argsort()[-num_maxima:]+1
-        z_ref_freq_maxima = np.array(self.z_fft_freq)[ordered_amp_indexes]
-        z_ref_amp_maxima  = np.array(self.z_ref_fft)[ordered_amp_indexes]
-        # output ordered by increasing frequency
-        ordered_freq_indexes = np.array(z_ref_freq_maxima).argsort()
-        z_ref_freq_maxima = np.array(z_ref_freq_maxima)[ordered_freq_indexes]
-        z_ref_amp_maxima  = np.array(z_ref_amp_maxima)[ordered_freq_indexes]
-        return z_ref_freq_maxima, z_ref_amp_maxima
+        z_ref_freq_peaks_local = np.hstack((self.z_ref_freq_peaks[1:],np.zeros(num_maxima)))[0:num_maxima]
+        z_ref_amp_peaks_local = np.hstack((self.z_ref_amp_peaks[1:],np.zeros(num_maxima)))[0:num_maxima]
+
+        return z_ref_freq_peaks_local, z_ref_amp_peaks_local
 
     def analyse_z_sat_and_ground(self):
         if not(hasattr(self, "end_analysis")):
