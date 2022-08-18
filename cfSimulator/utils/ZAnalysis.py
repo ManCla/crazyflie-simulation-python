@@ -40,6 +40,15 @@ class ZAnalysis(FlightDataHandler):
                            [255,  0,  0],  # red  : bh_sat_no_tracking
                            [  0,  0,  0]]) # dark : bh_something_wrong
 
+    '''
+    init method that allows to set the number of periods
+    to be analysed when performing frequency analysis and
+    calls the init method of the superclass
+    '''
+    def __init__(self, num_periods_anlyse=num_periods_spectrum) :
+        self.num_periods_anlyse = num_periods_anlyse
+        super().__init__()
+
     def z_loop_frequency_plot(self):
         if not(hasattr(self, "z_fft_freq")):
             self.freq_behaviour_z() # needed to get the frequency spectrum
@@ -87,8 +96,8 @@ class ZAnalysis(FlightDataHandler):
     '''
     def compute_end_analysis(self):
         time_coef = float(self.data_location.split('-')[-1]) # time dilation coefficient of test
-        if num_periods_spectrum > 0 :
-            self.end_analysis = settle + num_periods_spectrum*int((base_period_input/time_coef)/dt)
+        if self.num_periods_anlyse > 0 :
+            self.end_analysis = settle + self.num_periods_anlyse*int((base_period_input/time_coef)/dt)
             if self.end_analysis>(self.trace_length+1) : # we accept a rounding error
                 print("Trying to fft too many periods: I will use what I have--in TEST: {}".format(self.data_location))
                 self.end_analysis = self.trace_length
