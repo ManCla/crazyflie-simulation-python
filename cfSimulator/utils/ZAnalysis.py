@@ -153,7 +153,7 @@ class ZAnalysis(FlightDataHandler):
         for idx in range(len(ref_peaks_indexes)) :
             rp_idx = ref_peaks_indexes[idx]
             z_pos_fft_non_lin_part[rp_idx] = 0 # remove input frequencies from output spectrum
-            self.z_filter_degree[idx] = abs((self.z_pos_fft[rp_idx]/self.z_ref_fft[rp_idx])-1)
+            self.z_filter_degree[idx] = min(1,max(1-abs((self.z_pos_fft[rp_idx]/self.z_ref_fft[rp_idx])),0))
 
         nl_deg = max(z_pos_fft_non_lin_part)/max(self.z_ref_fft[1:])
         if nl_deg > 1 and not(silent) :
