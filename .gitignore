@@ -2,3 +2,14 @@
 flightdata/*
 # directory contining some saved plots
 images/*
+
+# cython stuff
+cfSimulator/*.c
+cfSimulator/*.so
+cfSimulator/*.html
+cfSimulator/*.pyx
+cfSimulator/utils/*.c
+cfSimulator/utils/*.so
+cfSimulator/utils/*.html
+cfSimulator/utils/*.pyx
+build/
