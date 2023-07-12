@@ -25,9 +25,8 @@ class cfSimulation():
 		# initialization of simulation variables #
 		##########################################
 		physics = cfPhysics()
-		ctrl    = cfPIDController(physics.config, physics.b,\
-		                          physics.I, physics.m, physics.g,\
-		                          physics.k, physics.l)
+		ctrl    = cfPIDController(physics.b, physics.I, physics.m,\
+		                          physics.g, physics.k, physics.l)
 		est     = cfEKF(physics.g)
 
 		# initialize storage variables

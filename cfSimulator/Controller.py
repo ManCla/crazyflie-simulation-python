@@ -41,7 +41,7 @@ class cfPIDController():
 	etaDesired: cython.double[3]
 	
 	@cython.cdivision(True) 
-	def __init__(self, config, b, I, m, g, k, l):
+	def __init__(self, b, I, m, g, k, l):
 		'''
 		controller "macros"
 		'''
@@ -67,7 +67,6 @@ class cfPIDController():
 		self.m = m
 		self.k = k
 		self.l = l
-		self.config = config
 
 		# controller states
 		self.tick = 1

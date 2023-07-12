@@ -22,7 +22,6 @@ class cfPhysics():
 		self.Ism = 3e-6       # kg*m^2
 		self.I   = [1.66e-5, 1.66e-5, 2.93e-5]  # kg*m^2
 		self.A   = [0.92e-6, 0.91e-6, 1.03e-6]  # kg/s
-		self.config =  "cross" # quadcopter formation: "plus" or "cross" configuration
 		
 		# Rotor speed saturations
 		self.omega_min_lim = 000.001   # rad/s
@@ -122,21 +121,6 @@ class cfPhysics():
 		T = -beta1/(2*beta2) + np.sqrt((beta1/(2*beta2))**2 + T/beta2)
 		return T 
 
-	def omegaToThrustPlusConfig(self, omega):
-		# input : rotors speeds -- np array 4x1
-		# output: T   : vertical thrust
-		#         tau : torques in body frame
-		self.Mw  = np.array([[        self.k,         self.k,        self.k,        self.k],  \
-							 [             0, -self.k*self.l,             0, self.k*self.l],  \
-							 [-self.k*self.l,              0, self.k*self.l,             0],  \
-							 [       -self.b,         self.b,       -self.b,        self.b]])
-
-		omega = np.clip(omega, self.omega_min_lim, self.omega_max_lim)
-		omegasq = np.power(omega,2)
-
-		Tbar = (self.Mw).dot(omegasq)
-		return Tbar
-
 	def omegaToThrustCrossConfig(self, omega):
 		# input : rotors speeds -- np array 4x1
 		# output: T   : vertical thrust
@@ -155,10 +139,7 @@ class cfPhysics():
 	def pwdToForcesMap(self, u):
 		# wrapper for mapping:
 		# pwd -> rotor thrust -> rotor speed -> body forces
-		if self.config=="plus" : # plus configuration
-			return self.omegaToThrustPlusConfig(self.thrustToOmega((self.pwmToThrust(u))))
-		else :                   # cross configuration
-			return self.omegaToThrustCrossConfig(self.thrustToOmega((self.pwmToThrust(u))))
+		return self.omegaToThrustCrossConfig(self.thrustToOmega((self.pwmToThrust(u))))
 
 	############################
 	### SIMULATION FUNCTIONS ###
