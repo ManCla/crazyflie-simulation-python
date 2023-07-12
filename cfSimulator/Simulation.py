@@ -25,14 +25,13 @@ class cfSimulation():
 		# initialization of simulation variables #
 		##########################################
 		physics = cfPhysics()
-		ctrl    = cfPIDController(physics.b, physics.I, physics.m,\
-		                          physics.g, physics.k, physics.l)
-		est     = cfEKF(physics.g)
+		ctrl    = cfPIDController()
+		est     = cfEKF()
 
 		# initialize storage variables
 		t       = np.linspace(t_init,t_final,n_steps)
-		u_store = np.zeros((physics.n_inputs, n_steps))
-		x_store = np.zeros((physics.n_states, n_steps))
+		u_store = np.zeros((4, n_steps))  #  4 are the number of inputs to the physics model
+		x_store = np.zeros((13, n_steps)) # 13 are the number of states of the physics model
 		acc     = np.zeros((3,n_steps)) # inertial measurement
 		gyro    = np.zeros((3,n_steps)) # inertial measurement
 		eta     = np.zeros((3,n_steps)) # euler angles
@@ -52,7 +51,7 @@ class cfSimulation():
 		i = i+1
 
 		while i<n_steps: # loop over time steps
-			if not i%500: # progress printout
+			if not i%1000: # progress printout
 				print(" -- simulation at time " + str(t[i]))
 
 			set_pt[:,i] = ref.refGen(t[i]) # get reference

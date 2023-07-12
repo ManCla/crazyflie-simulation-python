@@ -20,9 +20,9 @@ def rateDo(rate, tick):
 
 class cfEKF():
 
-    def __init__(self, g):
+    def __init__(self):
         # drone parameters
-        self.g = g 
+        self.g = 9.81
 
         # filter params
         self.procNoiseAcc_xy = 0.5

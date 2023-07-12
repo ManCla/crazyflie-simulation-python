@@ -41,7 +41,7 @@ class cfPIDController():
 	etaDesired: cython.double[3]
 	
 	@cython.cdivision(True) 
-	def __init__(self, b, I, m, g, k, l):
+	def __init__(self):
 		'''
 		controller "macros"
 		'''
@@ -59,14 +59,6 @@ class cfPIDController():
 		self.att_lpf_enable        = False
 		self.att_filter_cutoff     = 15
 		self.attRate_filter_cutoff = 30
-
-		#drone parameters
-		self.b = b
-		self.I = I
-		self.g = g
-		self.m = m
-		self.k = k
-		self.l = l
 
 		# controller states
 		self.tick = 1
@@ -95,7 +87,7 @@ class cfPIDController():
 	### TORQUE -> PWM MAPPING ###
 	#############################
 
-	@cython.cdivision(True) 
+	@cython.cdivision(True)
 	def forcesToPWMcrossConfig(self, T:cython.double, tau1:cython.double,tau2:cython.double,tau3:cython.double):
 		r: cython.double
 		p: cython.double
