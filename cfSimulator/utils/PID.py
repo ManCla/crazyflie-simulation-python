@@ -5,6 +5,7 @@ import cython
 '''
     PID class
 '''
+@cython.cdivision(True) 
 @cython.cclass
 class PID():
     kp: cython.double
@@ -27,6 +28,9 @@ class PID():
 
 
     def __init__(self, kp:float, ki:float, kd:float, dt:float, lp_enable:cython.int, lp_rate:float, lp_cutoff:float, Iclamp:float):
+        pi: cython.float
+        pi=3.1415926535
+
         self.kp = kp
         self.ki = ki
         self.kd = kd
@@ -40,17 +44,19 @@ class PID():
             fr: cython.double
             fr   = lp_rate/lp_cutoff
             ohm: cython.double
-            ohm  = np.tan(np.pi/fr)
+            ohm  = np.tan(pi/fr)
             ohm2: cython.double
             ohm2 = ohm**2
             c: cython.double
-            c    = 1+2*np.cos(np.pi/4)*ohm+ohm2
+            tmp: cython.double
+            tmp = 2*np.cos(pi/4)*ohm+ohm2
+            c    = 1+tmp
             # coefficients
             self.b0 = ohm2/c
             self.b1 = 2*self.b0
             self.b2 = self.b0
             self.a1 = 2*(ohm2-1)/c
-            self.a2 = (1-2*np.cos(np.pi/4)*ohm+ohm2)/c
+            self.a2 = (1-tmp)/c
             # init states
             self.x1 = 0
             self.x2 = 0
@@ -74,7 +80,11 @@ class PID():
             D = out
         self.stateI = self.stateI + error * self.dt
         if not(self.Iclamp==0):
-            self.stateI = np.clip(self.stateI, -self.Iclamp, self.Iclamp)
+            if self.stateI>self.Iclamp :
+                self.stateI = self.Iclamp
+            elif self.stateI<-self.Iclamp :
+                self.stateI = -self.Iclamp
+        I: cython.double
         I = self.ki * self.stateI
         self.oldError = error
         return P+D+I
