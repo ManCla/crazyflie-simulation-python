@@ -3,40 +3,12 @@
 import numpy as np
 import math
 import scipy.linalg as spl
-
-# synchronization macros
-mainRate        = 1000 #[Hz]
-predictionRate  = 100  #[Hz]
-zrangingRate    = 40   #[Hz]
-flowRate        = 100  #[Hz]
-mainDT = 1/mainRate
-predDT = 1/predictionRate
-zrDT   = 1/zrangingRate
-flowDT = 1/flowRate
-
-def rateDo(rate, tick):
-    #utility function to trigger events at expected rate
-    return not(tick % (mainRate/rate))
+import cython
 
 class cfEKF():
+    tick: cython.int
 
     def __init__(self):
-        # drone parameters
-        self.g = 9.81
-
-        # filter params
-        self.procNoiseAcc_xy = 0.5
-        self.procNoiseAcc_z = 1.0
-        self.procNoiseVel = 0
-        self.velNoiseForSim_xy =0.1 # NOTE: this is different from the firmware!
-        self.procNoisePos = 0
-        self.procNoiseAtt = 0
-        self.measNoiseGyro_rollpitch = 0.1
-        self.measNoiseGyro_yaw = 0.1
-        # zRagner noise model coefficients
-        self.expPointA = 2.5
-        self.expStdA   = 0.0025
-        self.expCoeff  = 2.92135
         # optical flow noise model
         self.flowStd   = 2 # used for both directions
 
@@ -111,7 +83,7 @@ class cfEKF():
         A[0:3,3:6] = self.R*dt
         A[0:3,6:9] = np.matmul(self.R,self.cross(-self.x[3:6]))*dt
         A[3:6,3:6] = np.identity(3)+self.cross(-gyro)*dt
-        A[3:6,6:9] = self.g*self.cross(-self.R[2,:])*dt
+        A[3:6,6:9] = 9.81*self.cross(-self.R[2,:])*dt # g=9.81
         A[6:9,6:9] = spl.expm(self.cross(-d))
 
         # covariance update according to system dynamics 
@@ -121,8 +93,8 @@ class cfEKF():
         # prediction
         dt2 = pow(dt,2)
         v   = self.x[3:6]*dt+acc*(dt2/2)
-        self.x[0:3] = self.x[0:3]+self.R.dot(v)+np.array([0,0,-self.g*dt2/2])
-        self.x[3:6] = self.x[3:6]+dt*(acc-(self.cross(gyro).dot(self.x[3:6]))-self.g*self.R[2,:])
+        self.x[0:3] = self.x[0:3]+self.R.dot(v)+np.array([0,0,-9.81*dt2/2]) # g=9.81
+        self.x[3:6] = self.x[3:6]+dt*(acc-(self.cross(gyro).dot(self.x[3:6]))-9.81*self.R[2,:]) # g=9.81
         angle  = np.linalg.norm(gyro*dt)
         ca     = np.cos(angle/2)
         sa     = np.sin(angle/2)
@@ -135,16 +107,33 @@ class cfEKF():
  
 
     def addProcessNoise(self, dt):
+        # noise params
+        procNoiseAcc_xy: cython.float
+        procNoiseAcc_z: cython.float
+        procNoiseVel: cython.float
+        velNoiseForSim_xy: cython.float
+        procNoisePos: cython.float
+        procNoiseAtt: cython.float
+        measNoiseGyro_rollpitch: cython.float
+        measNoiseGyro_yaw: cython.float
+        procNoiseAcc_xy = 0.5
+        procNoiseAcc_z = 1.0
+        procNoiseVel = 0
+        velNoiseForSim_xy =0.1 # NOTE: this is different from the firmware!
+        procNoisePos = 0
+        procNoiseAtt = 0
+        measNoiseGyro_rollpitch = 0.1
+        measNoiseGyro_yaw = 0.1
         # update covariance matrix according to process-noise
-        self.P = self.P + np.diag(np.power([self.procNoiseAcc_xy*dt*dt + self.procNoiseVel*dt + self.procNoisePos,\
-                                            self.procNoiseAcc_xy*dt*dt + self.procNoiseVel*dt + self.procNoisePos,\
-                                            self.procNoiseAcc_z*dt*dt + self.procNoiseVel*dt + self.procNoisePos,\
-                                            self.procNoiseAcc_xy*dt + self.procNoiseVel+self.velNoiseForSim_xy,\
-                                            self.procNoiseAcc_xy*dt + self.procNoiseVel+self.velNoiseForSim_xy,\
-                                            self.procNoiseAcc_z*dt + self.procNoiseVel,\
-                                            self.measNoiseGyro_rollpitch * dt + self.procNoiseAtt,\
-                                            self.measNoiseGyro_rollpitch * dt + self.procNoiseAtt,\
-                                            self.measNoiseGyro_yaw * dt + self.procNoiseAtt ],2))
+        self.P = self.P + np.diag(np.power([procNoiseAcc_xy*dt*dt + procNoiseVel*dt + procNoisePos,\
+                                            procNoiseAcc_xy*dt*dt + procNoiseVel*dt + procNoisePos,\
+                                            procNoiseAcc_z*dt*dt + procNoiseVel*dt + procNoisePos,\
+                                            procNoiseAcc_xy*dt + procNoiseVel+velNoiseForSim_xy,\
+                                            procNoiseAcc_xy*dt + procNoiseVel+velNoiseForSim_xy,\
+                                            procNoiseAcc_z*dt + procNoiseVel,\
+                                            measNoiseGyro_rollpitch * dt + procNoiseAtt,\
+                                            measNoiseGyro_rollpitch * dt + procNoiseAtt,\
+                                            measNoiseGyro_yaw * dt + procNoiseAtt ],2))
         self.sanityCheckP()
 
     def scalarUpdate(self, error, H, std):
@@ -161,10 +150,18 @@ class cfEKF():
         self.sanityCheckP()
 
     def correctionZranging(self, meas):
+        # zRagner noise model coefficients
+        expPointA: cython.double
+        expStdA: cython.double
+        expCoeff: cython.double
+        expPointA = 2.5
+        expStdA   = 0.0025
+        expCoeff  = 2.92135
+
         # update estimate with Z laser ranging data
         pred = self.x[2]/self.R[2,2]
         H    = np.array([0,0,1/self.R[2,2],0,0,0,0,0,0])
-        std  = self.expStdA * (1 + np.exp(self.expCoeff * (self.x[2] - self.expPointA)))
+        std  = expStdA * (1 + np.exp(expCoeff * (self.x[2] - expPointA)))
         self.scalarUpdate(meas-pred, H, std)
         # externalize error
         self.zerror = meas-pred
@@ -222,20 +219,39 @@ class cfEKF():
         self.stateExternal[3:6] = self.R.dot(self.x[3:6]) # speed in world frame
         self.stateExternal[6:9] = self.quaternionToEuler(self.q)
 
+    @cython.cdivision(True)
     def runEKF(self, acc, gyro, pxCount, zrange):
+        # synchronization macros
+        mainRate: cython.float
+        predictionRate: cython.float
+        zrangingRate: cython.float
+        flowRate: cython.float
+        mainDT: cython.float
+        predDT: cython.float
+        zrDT: cython.float
+        flowDT: cython.float
+        mainRate        = 1000 #[Hz]
+        predictionRate  = 100  #[Hz]
+        zrangingRate    = 40   #[Hz]
+        flowRate        = 100  #[Hz]
+        mainDT = 1/mainRate
+        predDT = 1/predictionRate
+        zrDT   = 1/zrangingRate
+        flowDT = 1/flowRate
+
         # main function called by main loop that takes care 
         # of all the timings of the kalman filter steps
         update = False
 
-        if rateDo(predictionRate, self.tick):
+        if not(self.tick % (mainRate/predictionRate)):
             self.predictionStep(acc,gyro,predDT)
             update = True
 
-        if rateDo(zrangingRate, self.tick):
+        if not(self.tick % (mainRate/zrangingRate)):
             self.correctionZranging(zrange)
             update = True
 
-        if rateDo(flowRate, self.tick):
+        if not(self.tick % (mainRate/flowRate)):
             self.correctionFlow(pxCount,gyro,flowDT)
             update = True
 
