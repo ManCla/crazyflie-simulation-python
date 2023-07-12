@@ -8,46 +8,45 @@ import numpy as np
 import math
 import scipy.integrate as intgr
 import sys
+import cython
 
 import random as rnd
 
 class cfPhysics():
+	# States 
+	x: cython.double[13]
+	currentTime: cython.double
+
+	# Variales for measurements computation
+	acc: cython.double[3]
+	R: cython.double[3][3]
+
+	# Measurement Noise Parameters
+	accNoiseVar: cython.double[3]
+	gyroNoiseVar: cython.double[3]
+	flowNoiseVar: cython.double[2]
+	# zRagner noise model coefficients
+	expPointA: cython.float
+	expStdA: cython.float
+	expCoeff: cython.float
+
 	def __init__(self, seed=1):
-		# Parameters
-		self.g   = 9.81       # m/s^2 
-		self.m   = 0.027+0.004      # kg
-		self.l   = 0.046      # m
-		self.k   = 2.2e-8     # N m s^2
-		self.b   = 2e-9       # N s^2
-		self.Ism = 3e-6       # kg*m^2
-		self.I   = [1.66e-5, 1.66e-5, 2.93e-5]  # kg*m^2
-		self.A   = [0.92e-6, 0.91e-6, 1.03e-6]  # kg/s
 		
-		# Rotor speed saturations
-		self.omega_min_lim = 000.001   # rad/s
-		self.omega_max_lim = 2500.0  # rad/s
-
-		# Model size
-		self.n_states = 13  # Number of states
-		self.n_inputs = 4   # Number of inputs
-
 		# States 
 		# Initialize State Conditions
-		self.x = np.zeros(self.n_states)
+		self.x = np.zeros(13,dtype=long)
 		self.x[6] = 1 # attitude quaternion has always norm 1
 		self.currentTime = 0.0 # (relative) time at which the model is
 
 		# Variales for measurements computation
-		self.acc = np.array([0,0,0])   # acceleration
-		self.R   = np.array([[1,0,0],
-		                     [0,1,0],
-		                     [0,0,1]]) # rotation matrix
+		acc = [0,0,0]   # acceleration
+		self.R = [[1,0,0],[0,1,0],[0,0,1]] # rotation matrix
 
 		# Measurement Noise Parameters
 		rnd.seed(seed)
-		self.accNoiseVar  = np.array([0.5,0.5,1.0]) # accelerometer noise variance
-		self.gyroNoiseVar = np.array([0.1,0.1,0.1]) # gyro noise variance
-		self.flowNoiseVar = np.array([2, 2])        # flowdeck noise variance
+		self.accNoiseVar  = [0.5,0.5,1.0] # accelerometer noise variance
+		self.gyroNoiseVar = [0.1,0.1,0.1] # gyro noise variance
+		self.flowNoiseVar = [2, 2]        # flowdeck noise variance
 		# zRagner noise model coefficients
 		self.expPointA = 2.5 
 		self.expStdA   = 0.0025
@@ -58,21 +57,6 @@ class cfPhysics():
 	### MATH UTILITY FUNCTIONS ###
 	##############################
 
-	def quatNormal(self, q):
-		# utilitiy function: normalize a quaternion
-		# input : quaternion -- np array 4x1
-		# output: quaternion -- np array 4x1
-		return q/np.sqrt(q[0]**2+q[1]**2+q[2]**2+q[3]**2)
-
-	def skewSymmetricOp(self, x, y, z):
-		# utilitiy function: compute the skew symmetric matrix associate to a 3-dim vector
-		# input : three components of the vector (in order)
-		# output: three-by-three skew symmetric matrix
-		mcross = np.array([[ 0, -z,  y],\
-	                       [ z,  0, -x],\
-	                       [-y,  x,  0]])
-		return mcross
-
 	def quaternionToEuler(self, q):
 		#utility function to translate quaternion in Euler angles for plotting
 		phi   = math.atan2(2*(q[0]*q[1] + q[2]*q[3]), 1-2*(q[1]**2+q[2]**2))
@@ -81,59 +65,130 @@ class cfPhysics():
 		eta = np.array([phi, theta, psi])
 		return eta
 
-	def computeR(self, q):
-		# computes rotation matrix from quaternion q
-		q = self.quatNormal(q)
-		qw = q[0]
-		qx = q[1]
-		qy = q[2]
-		qz = q[3]
-		R = np.array([[qw**2+qx**2-qy**2-qz**2,         2*(qx*qy-qw*qz),         2*(qx*qz+qw*qy)],\
-	                  [        2*(qx*qy+qw*qz), qw**2-qx**2+qy**2-qz**2,         2*(qy*qz-qw*qx)],\
-	                  [        2*(qx*qz-qw*qy),         2*(qy*qz+qw*qx), qw**2-qx**2-qy**2+qz**2]])
-		return R
-
 	######################################
 	### MAPPING FUNCTIONS PWM<->THRUST ###
 	###################################### 
 
+	@cython.cdivision(True)
 	def pwmToThrust(self, pwm):
 		# input : PWM signal to the 4 motors
 		# output: thrust of each rotor
-		# if ((pwm<0).any() or (pwm>65535).any()) :
-		# 	print("pwm command out of range")
-		# print(pwm)
-		pwm = np.clip(pwm, 0, 65535)
+		# extract input for compilation efficiency
+		pwm0: cython.double
+		pwm1: cython.double
+		pwm2: cython.double
+		pwm3: cython.double
+		pwm0 = pwm[0]
+		pwm1 = pwm[1]
+		pwm2 = pwm[2]
+		pwm3 = pwm[3]
+		if pwm0 < 0 :
+			pwm0 = 0
+		elif pwm0 > 65535 :
+			pwm0 = 65535
+		if pwm1 < 0 :
+			pwm1 = 0
+		elif pwm1 > 65535 :
+			pwm1 = 65535
+		if pwm2 < 0 :
+			pwm2 = 0
+		elif pwm2 > 65535 :
+			pwm2 = 65535
+		if pwm3 < 0 :
+			pwm3 = 0
+		elif pwm3 > 65535 :
+			pwm3 = 65535
 
-		d = pwm/65535.0 # duty cycle 
+		pwm0 = pwm0/65535.0
+		pwm1 = pwm1/65535.0
+		pwm2 = pwm2/65535.0
+		pwm3 = pwm3/65535.0
+		beta1: cython.float
+		beta2: cython.float
 		beta1 = 0.35
 		beta2 = 0.26
-		T = beta1*d + beta2*(d**2)
+		T: cython.double[4]
+		T[0] = beta1*pwm0 + beta2*(pwm0*pwm0)
+		T[1] = beta1*pwm1 + beta2*(pwm1*pwm1)
+		T[2] = beta1*pwm2 + beta2*(pwm2*pwm2)
+		T[3] = beta1*pwm3 + beta2*(pwm3*pwm3)
 		return T 
 
+	@cython.cdivision(True)
 	def thrustToOmega(self, T):
 		# input : thrust generated by each motor
 		# output: speed of each rotor
 		# neglecting beta0 since it is of an order smaller
+		beta1: cython.float
+		beta2: cython.float
 		beta1 = -1.97e-7
 		beta2 =  9.78e-8
+		tmp1: cython.double
+		tmp2: cython.double
+		tmp1 = beta1/(2*beta2)
+		tmp2 = (tmp1)**2
 		# BUG have to account for the different direction of rotation of the different rotors
-		T = -beta1/(2*beta2) + np.sqrt((beta1/(2*beta2))**2 + T/beta2)
+		T[0] = -tmp1 + math.sqrt(tmp2 + T[0]/beta2)
+		T[1] = -tmp1 + math.sqrt(tmp2 + T[1]/beta2)
+		T[2] = -tmp1 + math.sqrt(tmp2 + T[2]/beta2)
+		T[3] = -tmp1 + math.sqrt(tmp2 + T[3]/beta2)
 		return T 
 
 	def omegaToThrustCrossConfig(self, omega):
 		# input : rotors speeds -- np array 4x1
 		# output: T   : vertical thrust
-		#         tau : torques in body frame	
-
+		#         tau : torques in body frame
+		# Rotor speed saturations
+		omega_min_lim: cython.float
+		omega_max_lim: cython.float
+		omega_min_lim = 000.001   # rad/s
+		omega_max_lim = 2500.0  # rad/s
+		# extract input vars to local typed ones for C compilation
+		omega0: cython.double
+		omega1: cython.double
+		omega2: cython.double
+		omega3: cython.double
+		omega0 = omega[0]
+		omega1 = omega[1]
+		omega2 = omega[2]
+		omega3 = omega[3]
+		# coefficients to go from rotor speed to vertical thrust
+		k: cython.float
+		l: cython.float
+		b: cython.float
+		k   = 2.2e-8     # N m s^2
+		l   = 0.046      # m
+		b   = 2e-9       # N s^2
 		# rotor speed saturation (not sure we want it....)
-		omega = np.clip(omega, self.omega_min_lim, self.omega_max_lim)
-		omegasq = np.power(omega,2)
-		T        = self.k * sum(omegasq)
-		tauPhi   = self.k*self.l/np.sqrt(2) * omegasq.dot([-1,-1, 1, 1])
-		tauTheta = self.k*self.l/np.sqrt(2) * omegasq.dot([-1, 1, 1,-1])
-		tauPsi   = self.b * omegasq.dot([-1, 1,-1, 1])
-		Tbar     = np.array([T, tauPhi, tauTheta, tauPsi]) 
+		if omega0 < omega_min_lim :
+			omega0 = omega_min_lim
+		elif omega0 > omega_max_lim :
+			omega0 = omega_max_lim
+		if omega1 < omega_min_lim :
+			omega1 = omega_min_lim
+		elif omega1 > omega_max_lim :
+			omega1 = omega_max_lim
+		if omega2 < omega_min_lim :
+			omega2 = omega_min_lim
+		elif omega2 > omega_max_lim :
+			omega2 = omega_max_lim
+		if omega3 < omega_min_lim :
+			omega3 = omega_min_lim
+		elif omega3 > omega_max_lim :
+			omega3 = omega_max_lim
+		# omegasq = np.power(omega,2)
+		omega0sq = omega0*omega0
+		omega1sq = omega1*omega1
+		omega2sq = omega2*omega2
+		omega3sq = omega3*omega3
+		Tbar: cython.double[4]
+		Tbar[0]        = k * (omega0sq+omega1sq+omega2sq+omega3sq)
+		tmp: cython.double
+		tmp = k*l/(1.4142135623730951)  # sqrt(2) = 1.4142135623730951
+		Tbar[1] = tmp * (-omega0sq-omega1sq+omega2sq+omega3sq) # omegasq.dot([-1,-1, 1, 1])
+		Tbar[2] = tmp * (-omega0sq+omega1sq+omega2sq-omega3sq) # omegasq.dot([-1, 1, 1,-1])
+		Tbar[3] = b   * (-omega0sq+omega1sq-omega2sq+omega3sq) # omegasq.dot([-1, 1,-1, 1])
+		# Tbar     = [T, tauPhi, tauTheta, tauPsi]
 		return Tbar
 
 	def pwdToForcesMap(self, u):
@@ -145,7 +200,8 @@ class cfPhysics():
 	### SIMULATION FUNCTIONS ###
 	############################
 
-	def quad_acceleration(self, T, tau, v, q, w):
+	@cython.cdivision(True)
+	def quad_acceleration(self, T:cython.double, tau, v, q, w):
 		# input : system input, and states
 		#         T   : vertical thrust
 		#         tau : torques in body frame
@@ -157,35 +213,116 @@ class cfPhysics():
 		#         qdot : attitude acceleration (in quaternion) -- np array 4x1
 		#         wdot : attitude acceleration
 		#         R    : 
-		q = self.quatNormal(q)
+
+		# typing for cython
+		qw: cython.double
+		qx: cython.double
+		qy: cython.double
+		qz: cython.double
+		Ga: cython.double[3]
+		Ta: cython.double[3]
+		Aa: cython.double[3]
+		vdot: cython.double[3]
+		# constants for cython
+		m: cython.float
+		m = 0.027+0.004 # kg
+
+		# local typed copy of w for efficient C compilation
+		w0: cython.double
+		w1: cython.double
+		w2: cython.double
+		w0 = w[0]
+		w1 = w[1]
+		w2 = w[2]
+
+		# local typed copy of v for efficient C compilation
+		v0: cython.double
+		v1: cython.double
+		v2: cython.double
+		v0 = v[0]
+		v1 = v[1]
+		v2 = v[2]
+
+		# local typed copy of tau for efficient C compilation
+		tau0: cython.double
+		tau1: cython.double
+		tau2: cython.double
+		tau0 = tau[0]
+		tau1 = tau[1]
+		tau2 = tau[2]
+
 		qw = q[0]
 		qx = q[1]
 		qy = q[2]
 		qz = q[3]
-		qv = q[1:4]
+		qmod: cython.double
+		qmod = math.sqrt(qw*qw+qx*qx+qy*qy+qz*qz)
+		qw = qw/qmod
+		qx = qx/qmod
+		qy = qy/qmod
+		qz = qz/qmod
 
 		if self.x[2]<0.001 :
-			Ga = np.array([0, 0, 0]) # gravity companesated by contact force
+			Ga = [0, 0, 0] # gravity compensated by contact force
 			self.x[2]=0.0
 		else:
-			Ga = np.array([0, 0, -self.g])
-		Aa   = -1/self.m * np.diag(self.A).dot(v)       # Drag
-		angM = np.array([2*(qx*qz + qw*qy), \
-			             2*(qy*qz - qw*qx), \
-			             qw**2 - qx**2 - qy**2 + qz**2])
-		Ta = (T/self.m) * angM                          # vertical thrust?
-		vdot = Ga + Ta + Aa
+			Ga = [0, 0, -9.81] #g=9.81
+		# Aa   = -1/self.m * np.diag(self.A).dot(v)       # Drag
+		Aa   = [0.92e-6*v0/m, 0.91e-6*v1/m, 1.03e-6*v2/m]
+		angM: cython.double[3]
+		angM = [2*(qx*qz+qw*qy), 2*(qy*qz-qw*qx), qw**2-qx**2-qy**2+qz**2]
+		Ta[0] = (T/m) * angM[0] # vertical thrust?
+		Ta[1] = (T/m) * angM[1] # vertical thrust?
+		Ta[2] = (T/m) * angM[2] # vertical thrust?
+		vdot[0] = Ga[0] + Ta[0] - Aa[0]
+		vdot[1] = Ga[1] + Ta[1] - Aa[1]
+		vdot[2] = Ga[2] + Ta[2] - Aa[2]
 		
-		J = np.diag(self.I);
-		qcross = self.skewSymmetricOp(qx, qy, qz)
-		tmp1 = np.array([[      0,      -qv[0],      -qv[1],      -qv[2]],\
-			             [  qv[0], qcross[0,0], qcross[0,1], qcross[0,2]],\
-			             [  qv[1], qcross[1,0], qcross[1,1], qcross[1,2]],\
-			             [  qv[2], qcross[2,0], qcross[2,1], qcross[2,2]]])
-		tmp2 = np.array([0,w[0],w[1],w[2]])
-		qdot = 0.5*(np.identity(4)*qw  + tmp1).dot(tmp2) 
+		J: cython.double[3][3]
+		J = [[1.66e-5,      0,       0],\
+		     [      0,1.66e-5,       0],\
+			 [      0,      0, 2.93e-5]];
+		qcross: cython.double[3][3]
+		qcross = [[ 0, -qz,  qy],\
+	              [ qz,  0, -qx],\
+	              [-qy,  qx,  0]]
+		tmp1: cython.double[4][4]
+		# merged this summation in the definition of tmp1: np.identity(4)*qw  + tmp1
+		tmp1 = [[  qw,             -qx,             -qy,             -qz],\
+			    [  qx, qw+qcross[0][0],    qcross[0][1],    qcross[0][2]],\
+			    [  qy,    qcross[1][0], qw+qcross[1][1],    qcross[1][2]],\
+			    [  qz,    qcross[2][0],    qcross[2][1], qw+qcross[2][2]]]
+		tmp2: cython.double[4]
+		tmp2 = [0,w0,w1,w2]
+		qdot: cython.double[4]
+		# qdot = 0.5*(np.identity(4)*qw  + tmp1).dot(tmp2)
+		qdot[0] = 0.5*(tmp1[0][0]*tmp2[0]+tmp1[0][1]*tmp2[1]+tmp1[0][2]*tmp2[2]+tmp1[0][3]*tmp2[3])
+		qdot[1] = 0.5*(tmp1[1][0]*tmp2[0]+tmp1[1][1]*tmp2[1]+tmp1[1][2]*tmp2[2]+tmp1[1][3]*tmp2[3])
+		qdot[2] = 0.5*(tmp1[2][0]*tmp2[0]+tmp1[2][1]*tmp2[1]+tmp1[2][2]*tmp2[2]+tmp1[2][3]*tmp2[3])
+		qdot[3] = 0.5*(tmp1[3][0]*tmp2[0]+tmp1[3][1]*tmp2[1]+tmp1[3][2]*tmp2[2]+tmp1[3][3]*tmp2[3])
 		
-		wdot = np.linalg.inv(J).dot(tau - np.cross(w, J.dot(w)))
+		# wdot = np.linalg.inv(J).dot(tau - np.cross(w, J.dot(w)))
+
+		Jw: cython.double[3]
+		# J.dot(w)		
+		Jw[0] = J[0][0]*w0+J[0][1]*w1+J[0][2]*w2
+		Jw[1] = J[1][0]*w0+J[1][1]*w1+J[1][2]*w2
+		Jw[2] = J[2][0]*w0+J[2][1]*w1+J[2][2]*w2
+		
+		wCrossJ: cython.double[3]
+		# tau - np.cross(w, J.dot(w))
+		wCrossJ[0] = tau0 - w1*Jw[2]-w2*Jw[1]
+		wCrossJ[1] = tau1 - w2*Jw[0]-w0*Jw[2]
+		wCrossJ[2] = tau2 - w0*Jw[1]-w1*Jw[0]
+		
+		invJ: cython.double[3][3]
+		invJ = [[1/1.66e-5,        0,       0],\
+		        [        0,1/1.66e-5,       0],\
+			    [        0,        0,1/2.93e-5]];
+		wdot: cython.double[3]
+		wdot[0] = invJ[0][0]*wCrossJ[0]+invJ[0][1]*wCrossJ[1]+invJ[0][2]*wCrossJ[2]
+		wdot[1] = invJ[1][0]*wCrossJ[0]+invJ[1][1]*wCrossJ[1]+invJ[1][2]*wCrossJ[2]
+		wdot[2] = invJ[2][0]*wCrossJ[0]+invJ[2][1]*wCrossJ[1]+invJ[2][2]*wCrossJ[2]
 
 		return vdot, qdot, wdot
 
@@ -217,17 +354,31 @@ class cfPhysics():
 		sol  = intgr.solve_ivp(fun=self.stateDerivative, \
 			                   t_span=(self.currentTime, until),\
 			                   method="RK45" ,\
-			                   y0=np.concatenate((self.x, Tbar.T)) \
+			                   y0=np.concatenate((self.x, Tbar)) \
 			                  )
 		# stop if integration failed
 		if sol.success==False :
 			sys.exit("integration of ODE failed")
 		self.currentTime = until
-		self.x = sol.y[0:self.n_states,-1]
+		self.x = sol.y[0:13,-1]
 		# update measurements 
-		xu = self.stateDerivative(0, np.concatenate((self.x, Tbar.T))) # first input is not used
-		self.R    = self.computeR(self.x[6:10]) # rotation matrix
-		self.acc  = xu[3:6] + self.R.dot(np.array([0, 0, self.g]))     # add gravity in body frame
+		xu = self.stateDerivative(0, np.concatenate((self.x, Tbar))) # first input is not used
+		# computes rotation matrix from quaternion q=self.x[6:10]
+		qw: cython.double
+		qx: cython.double
+		qy: cython.double
+		qz: cython.double
+		qw = self.x[6]
+		qx = self.x[7]
+		qy = self.x[8]
+		qz = self.x[9]
+		a: cython.double[3]
+		b: cython.double[3]
+		c: cython.double[3]
+		self.R = [[qw*qw+qx*qx-qy*qy-qz*qz,         2*(qx*qy-qw*qz),         2*(qx*qz+qw*qy)],\
+		          [        2*(qx*qy+qw*qz), qw*qw-qx*qx+qy*qy-qz*qz,         2*(qy*qz-qw*qx)],\
+		          [        2*(qx*qz-qw*qy),         2*(qy*qz+qw*qx), qw*qw-qx*qx-qy*qy+qz*qz]]
+		self.acc  = xu[3:6] + [9.81*self.R[0][2], 9.81*self.R[1][2], 9.81*self.R[2][2]]
 		return self.x 
 
 	#############################
@@ -245,7 +396,7 @@ class cfPhysics():
 
 	def readGyro(self, Noise=0):
 		# gyro reading in rad/s
-		if Noise : 
+		if Noise :
 			nx = Noise * rnd.normalvariate(0,self.gyroNoiseVar[0])
 			ny = Noise * rnd.normalvariate(0,self.gyroNoiseVar[1])
 			nz = Noise * rnd.normalvariate(0,self.gyroNoiseVar[2])
@@ -257,7 +408,7 @@ class cfPhysics():
 		if self.x[2]<0 : # can read only positive distances from the floor
 			return 0
 		else : # if positive distance
-			angle = abs(np.arccos(self.R[2,2])) - (np.pi/180)*15/2 # alpha - theta_pz/2
+			angle = abs(np.arccos(self.R[2][2])) - (np.pi/180)*15/2 # alpha - theta_pz/2
 			if angle<0 :
 				angle = 0
 			if angle>np.pi/2 :
@@ -281,7 +432,7 @@ class cfPhysics():
 		dt      = 0.01 #technically the firmware uses a measured one
 		Npx     = 30
 		thetapx = 4.2*np.pi/180.0
-		R22     = self.R[2,2]
+		R22     = self.R[2][2]
 		wFactor = 1.25
 		velBF   = self.x[3:6] #speed in body frame
 		h = self.x[2] if self.x[2]>0.01 else 0.01
