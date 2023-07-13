@@ -38,16 +38,16 @@ class cfSimulation():
 
 		# initialize storage variables
 		t       = np.linspace(t_init,t_final,n_steps)
-		u_store = np.zeros((4, n_steps),dtype=long)  #  4 are the number of inputs to the physics model
-		x_store = np.zeros((13, n_steps),dtype=long) # 13 are the number of states of the physics model
-		acc     = np.zeros((3,n_steps),dtype=long) # inertial measurement
-		gyro    = np.zeros((3,n_steps),dtype=long) # inertial measurement
-		eta     = np.zeros((3,n_steps),dtype=long) # euler angles
-		pxCount = np.zeros((2,n_steps),dtype=long) # pixel count measurement
-		zrange  = np.zeros((n_steps),dtype=long)   # z ranging measurement
-		set_pt  = np.zeros((3,n_steps),dtype=long) # setpoint fed to cf
-		err_fd  = np.zeros((3,n_steps),dtype=long) # kalman innovation from flow measurements
-		x_est   = np.zeros((9,n_steps),dtype=long) # state estimated by EKF [pos, vel, eta]
+		u_store = np.zeros((4, n_steps),dtype=float)  #  4 are the number of inputs to the physics model
+		x_store = np.zeros((13, n_steps),dtype=float) # 13 are the number of states of the physics model
+		acc     = np.zeros((3,n_steps),dtype=float) # inertial measurement
+		gyro    = np.zeros((3,n_steps),dtype=float) # inertial measurement
+		eta     = np.zeros((3,n_steps),dtype=float) # euler angles
+		pxCount = np.zeros((2,n_steps),dtype=float) # pixel count measurement
+		zrange  = np.zeros((n_steps),dtype=float)   # z ranging measurement
+		set_pt  = np.zeros((3,n_steps),dtype=float) # setpoint fed to cf
+		err_fd  = np.zeros((3,n_steps),dtype=float) # kalman innovation from flow measurements
+		x_est   = np.zeros((9,n_steps),dtype=float) # state estimated by EKF [pos, vel, eta]
 
 		# initialize loop counter
 		i: cython.int
