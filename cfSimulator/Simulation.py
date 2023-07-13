@@ -4,6 +4,7 @@ from .Controller import cfPIDController
 from .StateEstimator import cfEKF
 from .utils.FlightDataHandler import FlightDataHandler
 import math
+import cython
 
 ### simulation parameters
 t_init          = 0
@@ -12,7 +13,7 @@ noise           = 0      # if non-zero includes measurement noise with given gai
 useKalmanFilter = True   # if true the KF is used for feedback
 quantisation    = False  # if false removes quantisation from flow data
 
-
+@cython.cclass
 class cfSimulation():
 
 	def __init__(self):
@@ -80,11 +81,18 @@ class cfSimulation():
 			q[2] = x_store[8,i]
 			q[3] = x_store[9,i]
 			phi: cython.double
+			phi1: cython.double
 			theta: cython.double
 			psi: cython.double
-			phi   = math.atan2(2*(q[0]*q[1] + q[2]*q[3]), 1-2*(q[1]**2+q[2]**2))
-			theta = math.asin(2*(q[0]*q[2] - q[3]*q[1]))
-			psi   = math.atan2(2*(q[0]*q[3] + q[1]*q[2]), 1-2*(q[2]**2+q[3]**2))
+			psi1: cython.double
+			phi   = 2*(q[0]*q[1] + q[2]*q[3])
+			phi1  = 1-2*(q[1]**2+q[2]**2)
+			theta = 2*(q[0]*q[2] - q[3]*q[1])
+			psi   = 2*(q[0]*q[3] + q[1]*q[2])
+			psi1  = 1-2*(q[2]**2+q[3]**2)
+			phi   = math.atan2(phi,phi1)
+			theta = math.asin(theta)
+			psi   = math.atan2(psi, psi1)
 
 			eta[:,i]     = [phi, theta, psi]
 			acc[:,i]     = physics.readAcc(noise)
