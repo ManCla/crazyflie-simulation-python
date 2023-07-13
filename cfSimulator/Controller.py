@@ -37,7 +37,6 @@ class cfPIDController():
 	# controller states
 	tick: cython.int
 	T: cython.int
-	tau: cython.double[3]
 	tau1: cython.double
 	tau2: cython.double
 	tau3: cython.double
@@ -85,45 +84,6 @@ class cfPIDController():
 		self.phidPID   = PID(250,500,2.5,self.attDT,self.att_lpf_enable,self.rate_attitude,self.attRate_filter_cutoff,33.3)
 		self.thetadPID = PID(250,500,2.5,self.attDT,self.att_lpf_enable,self.rate_attitude,self.attRate_filter_cutoff,33.3)
 		self.psidPID   = PID(120,16.7,0,self.attDT,self.att_lpf_enable,self.rate_attitude,self.attRate_filter_cutoff,166.7)
-		
-	#############################
-	### TORQUE -> PWM MAPPING ###
-	#############################
-
-	@cython.cdivision(True)
-	def forcesToPWMcrossConfig(self, T:cython.double, tau1:cython.double,tau2:cython.double,tau3:cython.double):
-		r: cython.double
-		p: cython.double
-		y: cython.double
-		r = tau1 / 2
-		p = tau2 / 2
-		y = tau3
-		pwm1: cython.double
-		pwm2: cython.double
-		pwm3: cython.double
-		pwm4: cython.double
-		pwm1 = T - r + p + y
-		pwm2 = T - r - p - y
-		pwm3 = T + r - p + y
-		pwm4 = T + r + p - y
-		# saturate to actuator limits
-		if pwm1>65535:
-			pwm1=65535
-		elif pwm1<0:
-			pwm1=0
-		if pwm2>65535:
-			pwm2=65535
-		elif pwm2<0:
-			pwm2=0
-		if pwm3>65535:
-			pwm3=65535
-		elif pwm3<0:
-			pwm3=0
-		if pwm4>65535:
-			pwm4=65535
-		elif pwm4<0:
-			pwm4=0
-		return np.array([pwm1, pwm2, pwm3, pwm4])
 
 	############################
 	### CONTROLLER FUNCTIONS ###
@@ -220,4 +180,45 @@ class cfPIDController():
 			self.tau1, self.tau2, self.tau3 = self.attitudeCtrl(self.etaDesired, eta_fw, etadot_fw)
 		self.tick = self.tick + 1
 		# output PWM values
-		return self.forcesToPWMcrossConfig(self.T, self.tau1, self.tau2, self.tau3)
+		# return self.forcesToPWMcrossConfig(self.T, self.tau1, self.tau2, self.tau3)
+		# def forcesToPWMcrossConfig(self, T:cython.double, tau1:cython.double,tau2:cython.double,tau3:cython.double):
+		T:cython.double
+		tau1:cython.double
+		tau2:cython.double
+		tau3:cython.double
+		T = self.T
+		tau1 = self.tau1
+		tau2 = self.tau2
+		tau3 = self.tau3
+		r: cython.double
+		p: cython.double
+		y: cython.double
+		r = tau1 / 2
+		p = tau2 / 2
+		y = tau3
+		pwm1: cython.double
+		pwm2: cython.double
+		pwm3: cython.double
+		pwm4: cython.double
+		pwm1 = T - r + p + y
+		pwm2 = T - r - p - y
+		pwm3 = T + r - p + y
+		pwm4 = T + r + p - y
+		# saturate to actuator limits
+		if pwm1>65535:
+			pwm1=65535
+		elif pwm1<0:
+			pwm1=0
+		if pwm2>65535:
+			pwm2=65535
+		elif pwm2<0:
+			pwm2=0
+		if pwm3>65535:
+			pwm3=65535
+		elif pwm3<0:
+			pwm3=0
+		if pwm4>65535:
+			pwm4=65535
+		elif pwm4<0:
+			pwm4=0
+		return np.array([pwm1, pwm2, pwm3, pwm4])
