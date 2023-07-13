@@ -52,19 +52,6 @@ class cfPhysics():
 		self.expStdA   = 0.0025
 		self.expCoeff  = 2.92135
 
-
-	##############################
-	### MATH UTILITY FUNCTIONS ###
-	##############################
-
-	def quaternionToEuler(self, q):
-		#utility function to translate quaternion in Euler angles for plotting
-		phi   = math.atan2(2*(q[0]*q[1] + q[2]*q[3]), 1-2*(q[1]**2+q[2]**2))
-		theta = math.asin(2*(q[0]*q[2] - q[3]*q[1]))
-		psi   = math.atan2(2*(q[0]*q[3] + q[1]*q[2]), 1-2*(q[2]**2+q[3]**2))
-		eta = np.array([phi, theta, psi])
-		return eta
-
 	######################################
 	### MAPPING FUNCTIONS PWM<->THRUST ###
 	###################################### 

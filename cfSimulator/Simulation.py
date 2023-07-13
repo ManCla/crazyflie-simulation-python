@@ -3,6 +3,7 @@ from .Physics import cfPhysics
 from .Controller import cfPIDController
 from .StateEstimator import cfEKF
 from .utils.FlightDataHandler import FlightDataHandler
+import math
 
 ### simulation parameters
 t_init          = 0
@@ -65,12 +66,27 @@ class cfSimulation():
 				u_store[:,i] = ctrl.ctrlCompute(set_pt[:,i],\
 				                                x_store[0:3,i-1],\
 				                                x_store[3:6,i-1],\
+				                                # call to quaternionToEuler is broken for cython optimisations
 				                                physics.quaternionToEuler(x_store[6:10,i-1]),\
 				                                gyro[:,i-1])
 			x_store[:,i] = physics.simulate(t[i], u_store[:,i]) # simulate physics
 			
 			# store measurements
-			eta[:,i]     = physics.quaternionToEuler(x_store[6:10,i])
+			# def quaternionToEuler(self, q=x_store[6:10,i]):
+			q: cython.double[4]
+			q = [0,0,0,0]
+			q[0] = x_store[6,i]
+			q[1] = x_store[7,i]
+			q[2] = x_store[8,i]
+			q[3] = x_store[9,i]
+			phi: cython.double
+			theta: cython.double
+			psi: cython.double
+			phi   = math.atan2(2*(q[0]*q[1] + q[2]*q[3]), 1-2*(q[1]**2+q[2]**2))
+			theta = math.asin(2*(q[0]*q[2] - q[3]*q[1]))
+			psi   = math.atan2(2*(q[0]*q[3] + q[1]*q[2]), 1-2*(q[2]**2+q[3]**2))
+
+			eta[:,i]     = [phi, theta, psi]
 			acc[:,i]     = physics.readAcc(noise)
 			gyro[:,i]    = physics.readGyro(noise)
 			pxCount[:,i] = physics.readPixelcount(noise, quantisation)
