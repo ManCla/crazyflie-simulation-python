@@ -6,13 +6,6 @@ from .utils.FlightDataHandler import FlightDataHandler
 import math
 import cython
 
-### simulation parameters
-t_init          = 0
-t_resolution    = 0.001
-noise           = 0      # if non-zero includes measurement noise with given gain
-useKalmanFilter = True   # if true the KF is used for feedback
-quantisation    = False  # if false removes quantisation from flow data
-
 @cython.cclass
 class cfSimulation():
 
@@ -20,6 +13,18 @@ class cfSimulation():
 		pass
 
 	def run(self, ref, t_final):
+		### simulation parameters
+		t_init: cython.double
+		t_resolution: cython.double
+		noise: cython.double
+		useKalmanFilter: cython.int
+		quantisation: cython.int
+		t_init          = 0
+		t_resolution    = 0.001
+		noise           = 0      # if non-zero includes measurement noise with given gain
+		useKalmanFilter = True   # if true the KF is used for feedback
+		quantisation    = False  # if false removes quantisation from flow data
+
 
 		n_steps         = int((t_final-t_init)/t_resolution)
 
