@@ -38,6 +38,9 @@ class cfPIDController():
 	tick: cython.int
 	T: cython.int
 	tau: cython.double[3]
+	tau1: cython.double
+	tau2: cython.double
+	tau3: cython.double
 	etaDesired: cython.double[3]
 	
 	@cython.cdivision(True) 
