@@ -50,7 +50,9 @@ class cfPhysics():
 	### MAPPING FUNCTIONS PWM<->THRUST ###
 	###################################### 
 
+	@cython.cfunc
 	@cython.cdivision(True)
+	@cython.inline
 	def pwmToThrust(self, pwm):
 		# input : PWM signal to the 4 motors
 		# output: thrust of each rotor
@@ -95,7 +97,9 @@ class cfPhysics():
 		T[3] = beta1*pwm3 + beta2*(pwm3*pwm3)
 		return T 
 
+	@cython.cfunc
 	@cython.cdivision(True)
+	@cython.inline
 	def thrustToOmega(self, T):
 		Tret: cython.double[4]
 		Tret[0] = T[0]
@@ -120,6 +124,9 @@ class cfPhysics():
 		Tret[3] = -tmp1 + math.sqrt(tmp2 + Tret[3]/beta2)
 		return Tret
 
+	@cython.cfunc
+	@cython.inline
+	@cython.cdivision(True)
 	def omegaToThrustCrossConfig(self, omega):
 		# input : rotors speeds -- np array 4x1
 		# output: T   : vertical thrust
@@ -181,7 +188,9 @@ class cfPhysics():
 	### SIMULATION FUNCTIONS ###
 	############################
 
+	@cython.cfunc
 	@cython.cdivision(True)
+	@cython.inline
 	def quad_acceleration(self, T:cython.double, tau, v, q, w):
 		# input : system input, and states
 		#         T   : vertical thrust
