@@ -12,6 +12,7 @@ import cython
 
 import random as rnd
 
+@cython.cclass
 class cfPhysics():
 	# States 
 	x: cython.double[13]
@@ -44,13 +45,6 @@ class cfPhysics():
 
 		# Measurement Noise Parameters
 		rnd.seed(seed)
-		self.accNoiseVar  = [0.5,0.5,1.0] # accelerometer noise variance
-		self.gyroNoiseVar = [0.1,0.1,0.1] # gyro noise variance
-		self.flowNoiseVar = [2, 2]        # flowdeck noise variance
-		# zRagner noise model coefficients
-		self.expPointA = 2.5 
-		self.expStdA   = 0.0025
-		self.expCoeff  = 2.92135
 
 	######################################
 	### MAPPING FUNCTIONS PWM<->THRUST ###
@@ -373,63 +367,97 @@ class cfPhysics():
 	#############################
 
 	def readAcc(self, Noise=0):
+		accNoiseVar: cython.double[3]
+		accNoiseVar  = [0.5,0.5,1.0] # accelerometer noise variance
 		# accelerometer reading in m/s^2
 		if Noise :
-			nx = Noise * rnd.normalvariate(0,self.accNoiseVar[0])
-			ny = Noise * rnd.normalvariate(0,self.accNoiseVar[1])
-			nz = Noise * rnd.normalvariate(0,self.accNoiseVar[2])
+			nx = Noise * rnd.normalvariate(0,accNoiseVar[0])
+			ny = Noise * rnd.normalvariate(0,accNoiseVar[1])
+			nz = Noise * rnd.normalvariate(0,accNoiseVar[2])
 			return self.acc + np.array([nx,ny,nz])
 		return self.acc
 
 	def readGyro(self, Noise=0):
+		gyroNoiseVar: cython.double[3]
+		gyroNoiseVar = [0.1,0.1,0.1] # gyro noise variance
 		# gyro reading in rad/s
 		if Noise :
-			nx = Noise * rnd.normalvariate(0,self.gyroNoiseVar[0])
-			ny = Noise * rnd.normalvariate(0,self.gyroNoiseVar[1])
-			nz = Noise * rnd.normalvariate(0,self.gyroNoiseVar[2])
-			return self.x[10:13] + np.array([nx,ny,nz])
-		return self.x[10:13]
+			nx = Noise * rnd.normalvariate(0,gyroNoiseVar[0])
+			ny = Noise * rnd.normalvariate(0,gyroNoiseVar[1])
+			nz = Noise * rnd.normalvariate(0,gyroNoiseVar[2])
+			return [self.x[10]+nx, self.x[11]+ny, self.x[12]+nz ]
+		return [self.x[10], self.x[11], self.x[12] ]
 
+	@cython.cdivision(True)
 	def readZRanging(self, Noise=0):
+		pi: cython.float
+		pi=3.1415926535
+		# zRagner noise model coefficients
+		expPointA: cython.double
+		expStdA: cython.double
+		expCoeff: cython.double
+		expPointA = 2.5
+		expStdA   = 0.0025
+		expCoeff  = 2.92135
+
+		angle: cython.double # local var
+		x2: cython.double    # extract state once for efficiency
+		x2 = self.x[2]
+
 		# z ranging data reading 		
-		if self.x[2]<0 : # can read only positive distances from the floor
+		if x2<0 : # can read only positive distances from the floor
 			return 0
 		else : # if positive distance
-			angle = abs(np.arccos(self.R[2][2])) - (np.pi/180)*15/2 # alpha - theta_pz/2
+			angle = abs(np.arccos(self.R[2][2])) - (pi/180)*15/2 # alpha - theta_pz/2
 			if angle<0 :
 				angle = 0
-			if angle>np.pi/2 :
+			if angle>pi/2 :
 				print("ERROR: drone too much tilted, zranging data corrupted")
-				angle = np.pi-0.001 # send out a very large reading (firmware has to handle it)
+				angle = pi-0.001 # send out a very large reading (firmware has to handle it)
 			if Noise :
-				nz = self.expStdA * (1 + np.exp(self.expCoeff * (self.x[2] - self.expPointA)))
-				ret = self.x[2]/np.cos(angle) + Noise * rnd.normalvariate(0,nz)
+				ret: cython.double
+				nz = expStdA * (1 + np.exp(expCoeff * (x2 - expPointA)))
+				ret = x2/np.cos(angle) + Noise * rnd.normalvariate(0,nz)
 				if ret<0 :
 					return 0
 				else :
 					return ret
-			return self.x[2]/np.cos(angle)
+			return x2/np.cos(angle)
 
-	def readPixelcount(self, Noise=0, Quantisation=True):
+	@cython.cdivision(True)
+	def readPixelcount(self, Noise: cython.int =0 , Quantisation: cython.int =True):
+		pi: cython.double
+		pi=3.1415926535
+		flowNoiseVar: cython.double[2]
+		flowNoiseVar = [2, 2]        # flowdeck noise variance
 		# function implementing the optical flow measure
 		# it returns the pixelcount in the x and y direction
 		# parameters
 		# TODO: use dt from firmware to detect poor timing properties of 
 		#       flowdeck task implementation
+		dt: cython.double
+		Npx: cython.double
+		thetapx: cython.double
+		R22: cython.double
+		wFactor: cython.double
 		dt      = 0.01 #technically the firmware uses a measured one
 		Npx     = 30
-		thetapx = 4.2*np.pi/180.0
+		thetapx = 4.2*pi/180.0
 		R22     = self.R[2][2]
 		wFactor = 1.25
-		velBF   = self.x[3:6] #speed in body frame
+		velBF: cython.double[3] #speed in body frame
+		velBF[0] = self.x[3]
+		velBF[1] = self.x[4]
+		velBF[2] = self.x[5]
+		h: cython.double
 		h = self.x[2] if self.x[2]>0.01 else 0.01
 		# predictedNX 
 		dnx = (dt * Npx / thetapx) * ((velBF[0]*R22 / h) - wFactor * self.x[11]) 
 		# predictedNY 
 		dny = (dt * Npx / thetapx) * ((velBF[1]*R22 / h) + wFactor * self.x[10])
 		if Noise :
-			dnx = dnx + Noise * rnd.normalvariate(0,self.flowNoiseVar[0])
-			dny = dny + Noise * rnd.normalvariate(0,self.flowNoiseVar[1])
+			dnx = dnx + Noise * rnd.normalvariate(0,flowNoiseVar[0])
+			dny = dny + Noise * rnd.normalvariate(0,flowNoiseVar[1])
 		if Quantisation:
 			return np.array([int(np.rint(dnx)), int(np.rint(dny))])
 		else:
