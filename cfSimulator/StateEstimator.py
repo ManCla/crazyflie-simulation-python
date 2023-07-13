@@ -5,6 +5,47 @@ import math
 import scipy.linalg as spl
 import cython
 
+#########################
+### UTILITY FUNCTIONS ###
+#########################
+@cython.cfunc
+@cython.inline
+def cross(x):
+    # utility function: compute skew symmetric matrix from 3-dim vector
+    # input : three dimensional vector
+    # output: three-by-three skew symmetric matrix
+    mcross = np.array([[ 0,   -x[2],  x[1]],\
+                       [ x[2],    0, -x[0]],\
+                       [-x[1], x[0],    0]])
+    return mcross
+
+@cython.cfunc
+@cython.inline
+def quatMult(dq, q):
+    dq0: cython.double
+    dq1: cython.double
+    dq2: cython.double
+    dq3: cython.double
+    dq0 = dq[0]
+    dq1 = dq[1]
+    dq2 = dq[2]
+    dq3 = dq[3]
+    q0: cython.double
+    q1: cython.double
+    q2: cython.double
+    q3: cython.double
+    q0 = q[0]
+    q1 = q[1]
+    q2 = q[2]
+    q3 = q[3]
+    out: cython.double[4]
+    out = np.zeros(4)
+    out[0] = dq0*q0-dq1*q1-dq2*q2-dq3*q3
+    out[1] = dq1*q0+dq0*q1+dq3*q2-dq2*q3
+    out[2] = dq2*q0-dq3*q1+dq0*q2+dq1*q3
+    out[3] = dq3*q0+dq2*q1-dq1*q2+dq0*q3
+    return out
+
 class cfEKF():
     tick: cython.int
     x: cython.double[9]
@@ -28,18 +69,6 @@ class cfEKF():
         self.zerror = 0
 
         self.tick = 0 # counter 
-
-    #########################
-    ### UTILITY FUNCTIONS ###
-    #########################
-    def cross(self, x):
-        # utility function: compute skew symmetric matrix from 3-dim vector
-        # input : three dimensional vector
-        # output: three-by-three skew symmetric matrix
-        mcross = np.array([[ 0,   -x[2],  x[1]],\
-                           [ x[2],    0, -x[0]],\
-                           [-x[1], x[0],    0]])
-        return mcross
 
     def sanityCheckP(self):
         # saturate
@@ -82,31 +111,6 @@ class cfEKF():
         # enforce symmetry
         self.P = (self.P+self.P.transpose())/2
 
-    def quatMult(self, dq, q):
-        dq0: cython.double
-        dq1: cython.double
-        dq2: cython.double
-        dq3: cython.double
-        dq0 = dq[0]
-        dq1 = dq[1]
-        dq2 = dq[2]
-        dq3 = dq[3]
-        q0: cython.double
-        q1: cython.double
-        q2: cython.double
-        q3: cython.double
-        q0 = q[0]
-        q1 = q[1]
-        q2 = q[2]
-        q3 = q[3]
-        out: cython.double[4]
-        out = np.zeros(4)
-        out[0] = dq0*q0-dq1*q1-dq2*q2-dq3*q3
-        out[1] = dq1*q0+dq0*q1+dq3*q2-dq2*q3
-        out[2] = dq2*q0-dq3*q1+dq0*q2+dq1*q3
-        out[3] = dq3*q0+dq2*q1-dq1*q2+dq0*q3
-        return out
-
     ###########################
     ### ALGORITHM FUNCTIONS ###
     ###########################
@@ -121,10 +125,10 @@ class cfEKF():
         A = np.zeros((9,9))
         A[0:3,0:3] = [[1,0,0],[0,1,0],[0,0,1]]
         A[0:3,3:6] = self.R*dt
-        A[0:3,6:9] = np.matmul(self.R,self.cross(-self.x[3:6]))*dt
-        A[3:6,3:6] = [[1,0,0],[0,1,0],[0,0,1]]+self.cross(-gyro)*dt
-        A[3:6,6:9] = 9.81*self.cross(-self.R[2,:])*dt # g=9.81
-        A[6:9,6:9] = spl.expm(self.cross(d))
+        A[0:3,6:9] = np.matmul(self.R,cross(-self.x[3:6]))*dt
+        A[3:6,3:6] = [[1,0,0],[0,1,0],[0,0,1]]+cross(-gyro)*dt
+        A[3:6,6:9] = 9.81*cross(-self.R[2,:])*dt # g=9.81
+        A[6:9,6:9] = spl.expm(cross(d))
 
         # covariance update according to system dynamics 
         AP = np.matmul(A,self.P)             # compute A*P
@@ -134,7 +138,7 @@ class cfEKF():
         dt2 = pow(dt,2)
         v   = self.x[3:6]*dt+acc*(dt2/2)
         self.x[0:3] = self.x[0:3]+self.R.dot(v)+np.array([0,0,-9.81*dt2/2]) # g=9.81
-        self.x[3:6] = self.x[3:6]+dt*(acc-(self.cross(gyro).dot(self.x[3:6]))-9.81*self.R[2,:]) # g=9.81
+        self.x[3:6] = self.x[3:6]+dt*(acc-(cross(gyro).dot(self.x[3:6]))-9.81*self.R[2,:]) # g=9.81
         angle  = np.linalg.norm(gyro*dt)
         ca     = np.cos(angle/2)
         sa     = np.sin(angle/2)
@@ -142,7 +146,7 @@ class cfEKF():
             dq = np.array([1,0,0,0])
         else:
             dq = np.array([ca, sa*dt*gyro[0]/angle, sa*dt*gyro[1]/angle, sa*dt*gyro[2]/angle])
-        self.q = self.quatMult(dq,self.q)      # rotation in quaternions
+        self.q = quatMult(dq,self.q)      # rotation in quaternions
         self.q = self.q/np.linalg.norm(self.q) # normalize
 
     @cython.cdivision
@@ -232,7 +236,7 @@ class cfEKF():
             dq = np.array([1,0,0,0])
         else:
             dq = np.array([ca, sa*self.x[6]/angle, sa*self.x[7]/angle, sa*self.x[8]/angle])
-        self.q = self.quatMult(dq,self.q)      # rotation in quaternions
+        self.q = quatMult(dq,self.q)      # rotation in quaternions
         self.q = self.q/np.linalg.norm(self.q) # normalize
 
         # rotate covariance since we rotated body
@@ -241,7 +245,7 @@ class cfEKF():
         A = np.zeros((9,9))
         A[0:3,0:3] = [[1,0,0],[0,1,0],[0,0,1]]
         A[3:6,3:6] = [[1,0,0],[0,1,0],[0,0,1]]
-        A[6:9,6:9] = spl.expm(self.cross(-d))
+        A[6:9,6:9] = spl.expm(cross(-d))
         AP = np.matmul(A,self.P)             # compute A*P
         self.P = np.matmul(AP,A.transpose()) # compute A*P*A'
         self.sanityCheckP()
