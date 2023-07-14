@@ -5,6 +5,7 @@ The considered setup is of autonomous flight with the [Flowdeck V2](https://stor
 The model includes the physics, the state estimator (the extended kalman filter), and the PID controller implemented in the firmware.
 The implementation of the state estimator and of the controllers is made as adherent as possible with the [actual firmware implementation](https://github.com/bitcraze/crazyflie-firmware).
 
+
 ## Repository Structure
 
  * **cfSimulator** : this is the directory containing the python classes belonging to the simulator. More details on the implementation of the different classes can be found in the readme in the directory.
@@ -17,6 +18,26 @@ The repository comes with two main scripts: _main.py_ for running a test flight 
 Call the scripts from the command line with:
 
 ```
+python main.py
+python plot.py
+```
+## On the execution speed of the model
+
+This simulation model has been written with readability in mind.
+As a result different choices made the execution of the model fairly slow (e.g., the extensive use of classes).
+If you need speed, please refer to the *cython-speedup* branch that allows to compile the simulator to much more efficient C code (and still run it as if it was python).
+To achive this it leverages the [Cython](https://cython.org) library.
+The speed-up is approximately 5 fold.
+The code however is much less readable.
+
+To use the faster version of the simulator execute the following in the command line (from the main repo directory).
+The first line checks out to the *cython-speedup* branch.
+The second line compiles (part of) the python code to C.
+The rest executes the code as normal.
+
+```
+git checkout
+./BuildCython.zsh
 python main.py
 python plot.py
 ```
