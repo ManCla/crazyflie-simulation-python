@@ -88,7 +88,11 @@ class cfSimulation():
 		##############################################
 
 		output = FlightDataHandler()
-		output.store(ref.trajectoryType, t, x_store, u_store, eta, \
+		if hasattr(ref,'trajectoryType'):
+			traj_type = ref.trajectoryType
+		else:
+			traj_type = "arbitrary"
+		output.store(traj_type, t, x_store, u_store, eta, \
 					 acc, pxCount, set_pt, zrange, err_fd, x_est)
 
 		# return simulation data
