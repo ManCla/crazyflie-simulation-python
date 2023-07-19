@@ -17,7 +17,7 @@ class cfSimulation():
 	def __init__(self):
 		pass
 
-	def run(self, ref, t_final):
+	def run(self, ref, t_final, silence=False):
 
 		n_steps         = int((t_final-t_init)/t_resolution)
 
@@ -53,7 +53,7 @@ class cfSimulation():
 		i = i+1
 
 		while i<n_steps: # loop over time steps
-			if not i%500: # progress printout
+			if not(silence) and not(i%1000): # progress printout
 				print(" -- simulation at time " + str(t[i]))
 
 			set_pt[:,i] = ref.refGen(t[i]) # get reference
