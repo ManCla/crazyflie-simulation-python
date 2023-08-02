@@ -12,6 +12,13 @@ import cython
 
 import random as rnd
 
+## error classes
+class Integration_Failed(BaseException):
+	pass
+
+class Drone_Crash(BaseException):
+	pass
+
 @cython.cclass
 class cfPhysics():
 	# States 
@@ -348,7 +355,8 @@ class cfPhysics():
 			                  )
 		# stop if integration failed
 		if sol.success==False :
-			sys.exit("integration of ODE failed")
+			print("integration of ODE failed")
+			raise Integration_Failed
 		self.currentTime = until
 		self.x = sol.y[0:13,-1]
 		# update measurements 
@@ -425,7 +433,7 @@ class cfPhysics():
 				angle = 0
 			if angle>pi/2 :
 				print("ERROR: drone too much tilted, zranging data corrupted")
-				angle = pi-0.001 # send out a very large reading (firmware has to handle it)
+				raise Drone_Crash
 			if Noise :
 				ret: cython.double
 				nz = expStdA * (1 + np.exp(expCoeff * (x2 - expPointA)))
