@@ -11,6 +11,13 @@ import sys
 
 import random as rnd
 
+## error classes
+class Integration_Failed(BaseException):
+    pass
+
+class Drone_Crash(BaseException):
+    pass
+
 class cfPhysics():
 	def __init__(self, seed=1):
 		# Parameters
@@ -240,7 +247,8 @@ class cfPhysics():
 			                  )
 		# stop if integration failed
 		if sol.success==False :
-			sys.exit("integration of ODE failed")
+			print("integration of ODE failed")
+			raise Integration_Failed
 		self.currentTime = until
 		self.x = sol.y[0:self.n_states,-1]
 		# update measurements 
@@ -281,6 +289,7 @@ class cfPhysics():
 				angle = 0
 			if angle>np.pi/2 :
 				print("ERROR: drone too much tilted, zranging data corrupted")
+				raise Drone_Crash
 				angle = np.pi-0.001 # send out a very large reading (firmware has to handle it)
 			if Noise :
 				nz = self.expStdA * (1 + np.exp(self.expCoeff * (self.x[2] - self.expPointA)))
