@@ -38,7 +38,7 @@ class cfPhysics():
 	expStdA: cython.float
 	expCoeff: cython.float
 
-	def __init__(self, seed=1):
+	def __init__(self, seed=1, do_not_reset_seed=False):
 		
 		# States 
 		# Initialize State Conditions
@@ -51,7 +51,8 @@ class cfPhysics():
 		self.R = [[1,0,0],[0,1,0],[0,0,1]] # rotation matrix
 
 		# Measurement Noise Parameters
-		rnd.seed(seed)
+		if not(do_not_reset_seed):
+			rnd.seed(seed)
 
 	######################################
 	### MAPPING FUNCTIONS PWM<->THRUST ###

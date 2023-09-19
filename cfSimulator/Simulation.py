@@ -12,7 +12,7 @@ class cfSimulation():
 	def __init__(self):
 		pass
 
-	def run(self, ref, t_final, silence=False):
+	def run(self, ref, t_final, silence=False, do_not_reset_seed=False):
 		### simulation parameters
 		t_init: cython.double
 		t_resolution: cython.double
@@ -31,7 +31,7 @@ class cfSimulation():
 		##########################################
 		# initialization of simulation variables #
 		##########################################
-		physics = cfPhysics()
+		physics = cfPhysics(do_not_reset_seed=do_not_reset_seed)
 		ctrl    = cfPIDController()
 		est     = cfEKF()
 
