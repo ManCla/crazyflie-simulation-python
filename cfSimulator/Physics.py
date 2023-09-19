@@ -19,7 +19,7 @@ class Drone_Crash(BaseException):
     pass
 
 class cfPhysics():
-	def __init__(self, seed=1):
+	def __init__(self, seed=1, do_not_reset_seed=False):
 		# Parameters
 		self.g   = 9.81       # m/s^2 
 		self.m   = 0.027+0.004      # kg
@@ -52,7 +52,8 @@ class cfPhysics():
 		                     [0,0,1]]) # rotation matrix
 
 		# Measurement Noise Parameters
-		rnd.seed(seed)
+		if not(do_not_reset_seed):
+			rnd.seed(seed)
 		self.accNoiseVar  = np.array([0.5,0.5,1.0]) # accelerometer noise variance
 		self.gyroNoiseVar = np.array([0.1,0.1,0.1]) # gyro noise variance
 		self.flowNoiseVar = np.array([2, 2])        # flowdeck noise variance
